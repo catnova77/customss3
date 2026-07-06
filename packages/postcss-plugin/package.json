@@ -1,0 +1,20 @@
+{
+  "name": "postcss-customss3",
+  "version": "0.1.0",
+  "description": "PostCSS plugin for CustomSS3 — CSS3 superset with container queries, spring physics, OKLCH color, and more.",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "features/"
+  ],
+  "keywords": [
+    "postcss",
+    "postcss-plugin",
+    "css",
+    "customss3",
+    "container-queries",
+    "spring-physics",
+    "oklch"
+  ],
+  "license": "MIT"
+}
