@@ -365,7 +365,7 @@ class ParticleSwarm {
     this.speed = opts.speed || 1.5
     this.connectDist = opts.connectDist || 60
     this.particleSize = opts.particleSize || 2
-    this.color = opts.color || '#6c8cff'
+    this.colors = opts.colors || ['#000', '#888', '#fff']
 
     this.particles = []
     this.running = false
@@ -389,7 +389,8 @@ class ParticleSwarm {
       y: Math.random() * this.h,
       vx: (Math.random() - 0.5) * this.speed,
       vy: (Math.random() - 0.5) * this.speed,
-      size: 1 + Math.random() * this.particleSize
+      size: 1 + Math.random() * this.particleSize,
+      color: this.colors[Math.floor(Math.random() * this.colors.length)]
     }))
   }
 
@@ -451,7 +452,7 @@ class ParticleSwarm {
       if (p.y > h) p.y = 0
 
       // Draw particle
-      ctx.fillStyle = this.color
+      ctx.fillStyle = p.color
       ctx.beginPath()
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
       ctx.fill()
@@ -469,7 +470,7 @@ class ParticleSwarm {
         const distSq = dx * dx + dy * dy
         if (distSq < maxDistSq) {
           const alpha = 1 - distSq / maxDistSq
-          ctx.strokeStyle = this.color.replace(')', `, ${(alpha * 0.4).toFixed(2)})`).replace('rgb', 'rgba')
+          ctx.strokeStyle = `rgba(136,136,136,${(alpha * 0.35).toFixed(2)})`
           ctx.beginPath()
           ctx.moveTo(a.x, a.y)
           ctx.lineTo(b.x, b.y)

@@ -362,7 +362,7 @@ footer a{color:#6c8cff;text-decoration:none}
 ;(function(){
   try {
     const p = new CSS3FX.ParticleSwarm('#particleCanvas', {
-      count: 80, speed: 1.5, connectDist: 60, particleSize: 2, color: '#6c8cff'
+      count: 80, speed: 1.5, connectDist: 60, particleSize: 2, colors: ['#000', '#888', '#fff']
     })
     p.start()
   } catch(e) { console.log('Particle:', e.message) }
