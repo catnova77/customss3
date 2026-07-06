@@ -363,30 +363,19 @@ class ParticleSwarm {
     this.ctx = this.canvas.getContext('2d')
     this.count = opts.count || 80
     this.speed = opts.speed || 1.5
-    this.connectDist = opts.connectDist || 120
+    this.connectDist = opts.connectDist || 60
     this.particleSize = opts.particleSize || 2
-    this.colors = opts.colors || ['#6c8cff', '#8c6cff', '#6cffcc']
+    this.color = opts.color || '#6c8cff'
 
-    this.mouse = { x: -9999, y: -9999 }
     this.particles = []
     this.running = false
 
     this.resize()
     window.addEventListener('resize', () => this.resize())
-    this.canvas.addEventListener('mousemove', (e) => {
-      const rect = this.canvas.getBoundingClientRect()
-      this.mouse.x = (e.clientX - rect.left) * this.dpr
-      this.mouse.y = (e.clientY - rect.top) * this.dpr
-    })
-    this.canvas.addEventListener('mouseleave', () => {
-      this.mouse.x = -9999
-      this.mouse.y = -9999
-    })
   }
 
   resize() {
     const rect = this.canvas.getBoundingClientRect()
-    this.dpr = 1
     this.w = rect.width
     this.h = rect.height
     this.canvas.width = this.w
@@ -400,8 +389,7 @@ class ParticleSwarm {
       y: Math.random() * this.h,
       vx: (Math.random() - 0.5) * this.speed,
       vy: (Math.random() - 0.5) * this.speed,
-      size: 1 + Math.random() * this.particleSize,
-      color: this.colors[Math.floor(Math.random() * this.colors.length)]
+      size: 1 + Math.random() * this.particleSize
     }))
   }
 
@@ -431,29 +419,30 @@ class ParticleSwarm {
     ctx.fillRect(0, 0, w, h)
 
     const particles = this.particles
-    const mx = this.mouse.x
-    const my = this.mouse.y
 
-    // Update + draw particles
+    // Update particles — automatic floating
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i]
 
-      // Mouse interaction — gentle pull
-      const dx = mx - p.x
-      const dy = my - p.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      if (dist < 200 && dist > 0) {
-        const force = (200 - dist) / 200 * 0.05
-        p.vx += (dx / dist) * force
-        p.vy += (dy / dist) * force
+      // Random gentle direction changes
+      if (Math.random() < 0.005) {
+        p.vx += (Math.random() - 0.5) * 0.5
+        p.vy += (Math.random() - 0.5) * 0.5
       }
 
       p.x += p.vx
       p.y += p.vy
 
       // Damping
-      p.vx *= 0.99
-      p.vy *= 0.99
+      p.vx *= 0.995
+      p.vy *= 0.995
+
+      // Clamp speed
+      const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
+      if (spd > this.speed) {
+        p.vx = (p.vx / spd) * this.speed
+        p.vy = (p.vy / spd) * this.speed
+      }
 
       // Boundary wrap
       if (p.x < 0) p.x = w
@@ -462,14 +451,14 @@ class ParticleSwarm {
       if (p.y > h) p.y = 0
 
       // Draw particle
-      ctx.fillStyle = p.color
+      ctx.fillStyle = this.color
       ctx.beginPath()
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
       ctx.fill()
     }
 
     // Draw connections
-    const maxDist = this.connectDist
+    const maxDistSq = this.connectDist * this.connectDist
     ctx.lineWidth = 0.5
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
@@ -477,10 +466,10 @@ class ParticleSwarm {
         const b = particles[j]
         const dx = a.x - b.x
         const dy = a.y - b.y
-        const dist = dx * dx + dy * dy
-        if (dist < maxDist * maxDist) {
-          const alpha = 1 - dist / (maxDist * maxDist)
-          ctx.strokeStyle = `rgba(108, 140, 255, ${alpha * 0.4})`
+        const distSq = dx * dx + dy * dy
+        if (distSq < maxDistSq) {
+          const alpha = 1 - distSq / maxDistSq
+          ctx.strokeStyle = this.color.replace(')', `, ${(alpha * 0.4).toFixed(2)})`).replace('rgb', 'rgba')
           ctx.beginPath()
           ctx.moveTo(a.x, a.y)
           ctx.lineTo(b.x, b.y)
