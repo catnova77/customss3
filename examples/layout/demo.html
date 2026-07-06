@@ -212,17 +212,17 @@ footer a{color:#6c8cff;text-decoration:none}
         [0xf0, 0x93, 0xfb],
       ],
       speed: 0.3,
-      bands: 24
+      bands: 24,
+      freq: 2.0
     })
     a.start()
-    setTimeout(() => a.stop(), 30000)
   } catch(e) { console.log('Aurora:', e.message) }
 })()
 
 /* ─── Glitch ─── */
 ;(function(){
   try {
-    const g = new CSS3FX.Glitch('#glitchEl', { speed: 400, intensity: 5 })
+    const g = new CSS3FX.Glitch('#glitchEl', { speed: 400, intensity: 3 })
     g.start()
   } catch(e) { console.log('Glitch:', e.message) }
 })()

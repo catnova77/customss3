@@ -1,3 +1,5 @@
+const postcss = require('postcss')
+
 const features = {
   'container-queries': require('./features/container-queries'),
   'responsive-range': require('./features/responsive-range'),
@@ -13,7 +15,7 @@ module.exports = (opts = {}) => {
     Once(root) {
       for (const name of enabled) {
         if (features[name]) {
-          features[name](root)
+          features[name](root, postcss)
         }
       }
     }

@@ -1,65 +1,94 @@
 /*
  * CustomSS3 Demo — Example Input
  *
- * This file demonstrates CustomSS3 syntax extensions.
- * Run: node run-demo.js
- * Output goes to demo-output.css
+ * SHORTHAND SYNTAX EXTENSIONS:
+ *   aurora: blur(40px) speed(8s) colors(#667eea, #764ba2, #4facfe)
+ *   glitch: speed(3s) intensity(3)
+ *   blob:   speed(12s) colors(#667eea, #764ba2) size(200)
+ *   starfield: count(150) speed(4s)
+ *   perspective: depth(1000px) tilt(15)
+ *
+ * TRANSFORM SYNTAX EXTENSIONS:
+ *   @container (width > 400px) → @container (min-width: 401px)
+ *   @media (500px <= width < 1024px) → @media (min-width: 500px) ... (max-width: 1023px)
+ *   glass: blur(N) opacity(N) color(#X) border(W, C) → expanded backdrop-filter
+ *   neon: color(C) radius(N) intensity(N) → expanded text-shadow
+ *   background: mesh(#a, #b, #c) → expanded linear-gradient
+ *   display: masonry → display: grid
+ *   gap-x / gap-y → column-gap / row-gap
  */
 
-/* ─── 1. Container Query Operators ─── */
+/* ─── EFFECT: Aurora 极光流动背景 ─── */
+.aurora-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+  border-radius: 16px;
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 
-.card-grid {
+/* ─── EFFECT: Gooey Blob 黏性流体 ─── */
+.blob-section {
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── EFFECT: Glitch 故障文字 ─── */
+.glitch-title {
+  position: relative;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+}
+
+/* ─── EFFECT: Starfield 星场 ─── */
+.star-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── EFFECT: 3D Perspective 透视卡片 ─── */
+.persp-wrapper {
+  perspective: 1000px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
 
+/* ─── Container Query Operators ─── */
 @container (min-width: 401px) {
-  .card {
-    padding: 24px;
-    font-size: 1.125rem;
-  }
+  .card { padding: 24px; }
 }
-
-@container (min-width: 301px) and (max-width: 799px) {
-  .card {
-    padding: 16px;
-  }
-}
-
 @container (min-aspect-ratio: 0.75) {
-  .card {
-    flex-direction: row;
-  }
+  .card { flex-direction: row; }
 }
 
-/* ─── 2. Responsive Range Syntax ─── */
-
+/* ─── Responsive Range ─── */
 @media (min-width: 500px) and (max-width: 1023px) {
-  .sidebar {
-    display: none;
-  }
-  .main {
-    width: 100%;
-  }
+  .sidebar { display: none; }
 }
-
 @media (min-width: 1400px) {
-  .container {
-    max-width: 1320px;
-    margin: 0 auto;
-  }
+  .container { max-width: 1320px; }
 }
 
-@media (max-width: 479px) {
-  .header {
-    padding: 8px;
-    font-size: 0.875rem;
-  }
-}
-
-/* ─── 3. Glass Effect ─── */
-
+/* ─── Glass Effect ─── */
 .modal {
   background: #0a0a0a;
   backdrop-filter: blur(12px);
@@ -67,36 +96,19 @@
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-.card-glass {
-  background: #fff;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* ─── 4. Neon Glow ─── */
-
+/* ─── Neon Glow ─── */
 .hero-title {
   text-shadow: 0 0 12px cyan, 0 0 8px cyan, 0 0 4px cyan;
   color: #fff;
   font-size: 3rem;
 }
 
-.neon-accent {
-  text-shadow: 0 0 6px #ff6bff, 0 0 3px #ff6bff;
-}
-
-/* ─── 5. Mesh Gradient ─── */
-
+/* ─── Mesh Gradient ─── */
 .hero-bg {
   background: linear-gradient(120deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
 }
 
-.warm-gradient {
-  background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #ff9ff3 100%);
-}
-
-/* ─── 6. Layout Shorthands ─── */
-
+/* ─── Layout Shorthands ─── */
 .gallery {
   display: grid;
   /*
@@ -106,8 +118,339 @@
   break-inside: avoid;
   gap: 12px;
 }
-
 .card-layout {
   column-gap: 16px;
   row-gap: 24px;
+}
+
+
+/* ═══════════════════════════════════════════ */
+/* CustomSS3 Effects — Generated Content       */
+/* ═══════════════════════════════════════════ */
+
+._aurora_pt4a::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 30% 30%, #667eea 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 45%, #764ba2 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, #4facfe 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 75%, #f093fb 0%, transparent 50%);
+  filter: blur(40px);
+  animation: a-aurora-pt4a 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+._aurora_pt4a > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes a-aurora-pt4a {
+  0%   { transform: translate(-5%, -5%) scale(1) rotate(0deg); filter: blur(40px) hue-rotate(0deg); }
+  25%  { transform: translate(8%, 3%) scale(1.1) rotate(2deg); filter: blur(48px) hue-rotate(10deg); }
+  50%  { transform: translate(-3%, 8%) scale(0.95) rotate(-1deg); filter: blur(40px) hue-rotate(20deg); }
+  75%  { transform: translate(5%, -5%) scale(1.08) rotate(1.5deg); filter: blur(45px) hue-rotate(15deg); }
+  100% { transform: translate(-8%, 3%) scale(1.05) rotate(-0.5deg); filter: blur(43px) hue-rotate(30deg); }
+}
+
+._glitch_6fkw {
+  position: relative;
+}
+._glitch_6fkw::before,
+._glitch_6fkw::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+._glitch_6fkw::before {
+  color: #ff00c1;
+  animation: a-glitch-6fkw 2.5s infinite linear alternate-reverse;
+  clip-path: inset(0 0 60% 0);
+}
+._glitch_6fkw::after {
+  color: #00ffea;
+  animation: a-glitch-6fkw-2 2.5s infinite linear alternate-reverse;
+  clip-path: inset(60% 0 0 0);
+}
+@keyframes a-glitch-6fkw {
+  0%   { transform: translate(0); clip-path: inset(40% 0 60% 0); }
+  20%  { transform: translate(8px); clip-path: inset(20% 0 40% 0); }
+  40%  { transform: translate(-12px); clip-path: inset(70% 0 5% 0); }
+  60%  { transform: translate(4px); clip-path: inset(10% 0 70% 0); }
+  80%  { transform: translate(-8px); clip-path: inset(50% 0 30% 0); }
+  100% { transform: translate(0); clip-path: inset(30% 0 50% 0); }
+}
+@keyframes a-glitch-6fkw-2 {
+  0%   { transform: translate(0); }
+  20%  { transform: translate(-8px); }
+  40%  { transform: translate(12px); }
+  60%  { transform: translate(-4px); }
+  80%  { transform: translate(8px); }
+  100% { transform: translate(0); }
+}
+
+
+._blob_1a2z::before,
+._blob_1a2z::after {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+._blob_1a2z::before {
+  background: #ff6b6b;
+  animation: a-blob-1a2z 10s ease-in-out infinite alternate;
+  top: 10%;
+  left: 10%;
+}
+._blob_1a2z::after {
+  background: #4ecdc4;
+  animation: a-blob-1a2z-2 10s ease-in-out infinite alternate;
+  bottom: 10%;
+  right: 10%;
+}
+._blob_1a2z > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes a-blob-1a2z {
+  0%   { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; transform: translate(0, 0) scale(1); }
+  25%  { border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%; transform: translate(30px, 20px) scale(1.1); }
+  50%  { border-radius: 60% 40% 40% 60% / 40% 60% 40% 60%; transform: translate(-20px, 40px) scale(0.9); }
+  75%  { border-radius: 50% 50% 60% 40% / 50% 60% 40% 50%; transform: translate(20px, -10px) scale(1.2); }
+  100% { border-radius: 40% 60% 50% 50% / 60% 40% 50% 50%; transform: translate(-30px, 20px) scale(1); }
+}
+@keyframes a-blob-1a2z-2 {
+  0%   { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; transform: translate(0, 0) scale(1); }
+  25%  { border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; transform: translate(-30px, -20px) scale(1.2); }
+  50%  { border-radius: 40% 60% 60% 40% / 60% 40% 50% 50%; transform: translate(20px, -30px) scale(0.85); }
+  75%  { border-radius: 50% 40% 60% 50% / 40% 50% 60% 50%; transform: translate(-20px, 30px) scale(1.15); }
+  100% { border-radius: 60% 50% 40% 50% / 50% 40% 60% 50%; transform: translate(30px, -10px) scale(1); }
+}
+
+
+._star_yimk::before,
+._star_yimk::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+._star_yimk::before {
+  box-shadow:
+    1972px 678px rgba(255,255,255,0.56),
+    12px 1664px rgba(255,255,255,0.52),
+    743px 64px rgba(255,255,255,0.75),
+    1199px 63px rgba(255,255,255,0.49),
+    1127px 1222px rgba(255,255,255,0.42),
+    341px 1696px rgba(255,255,255,0.80),
+    1971px 1895px rgba(255,255,255,0.70),
+    535px 28px rgba(255,255,255,0.45),
+    678px 1410px rgba(255,255,255,0.34),
+    1699px 1848px rgba(255,255,255,0.71),
+    6px 711px rgba(255,255,255,0.33),
+    1896px 1353px rgba(255,255,255,0.59),
+    1384px 9px rgba(255,255,255,0.66),
+    57px 1520px rgba(255,255,255,0.46),
+    492px 1841px rgba(255,255,255,0.50),
+    256px 505px rgba(255,255,255,0.77),
+    1443px 858px rgba(255,255,255,0.34),
+    1164px 1525px rgba(255,255,255,0.33),
+    789px 1639px rgba(255,255,255,0.74),
+    71px 713px rgba(255,255,255,0.34),
+    732px 405px rgba(255,255,255,0.39),
+    630px 1183px rgba(255,255,255,0.64),
+    548px 929px rgba(255,255,255,0.42),
+    273px 1737px rgba(255,255,255,0.69),
+    925px 307px rgba(255,255,255,0.58),
+    1532px 1320px rgba(255,255,255,0.38),
+    1049px 1351px rgba(255,255,255,0.38),
+    763px 1322px rgba(255,255,255,0.76),
+    786px 1330px rgba(255,255,255,0.72),
+    1243px 1879px rgba(255,255,255,0.65),
+    1851px 1990px rgba(255,255,255,0.56),
+    814px 1840px rgba(255,255,255,0.62),
+    154px 1000px rgba(255,255,255,0.41),
+    599px 1222px rgba(255,255,255,0.32),
+    1951px 1420px rgba(255,255,255,0.76),
+    1364px 421px rgba(255,255,255,0.32),
+    1237px 757px rgba(255,255,255,0.46),
+    325px 1828px rgba(255,255,255,0.78),
+    538px 250px rgba(255,255,255,0.71),
+    739px 538px rgba(255,255,255,0.32),
+    541px 650px rgba(255,255,255,0.36),
+    1598px 270px rgba(255,255,255,0.39),
+    366px 495px rgba(255,255,255,0.31),
+    406px 1101px rgba(255,255,255,0.59),
+    289px 201px rgba(255,255,255,0.44),
+    922px 440px rgba(255,255,255,0.72),
+    912px 46px rgba(255,255,255,0.55),
+    1195px 500px rgba(255,255,255,0.34),
+    1570px 1452px rgba(255,255,255,0.72),
+    1705px 333px rgba(255,255,255,0.61),
+    1449px 1327px rgba(255,255,255,0.49),
+    506px 444px rgba(255,255,255,0.72),
+    240px 213px rgba(255,255,255,0.51),
+    1488px 671px rgba(255,255,255,0.50),
+    204px 362px rgba(255,255,255,0.70),
+    1427px 590px rgba(255,255,255,0.55),
+    1429px 1511px rgba(255,255,255,0.55),
+    616px 1701px rgba(255,255,255,0.75),
+    1506px 624px rgba(255,255,255,0.56),
+    781px 1116px rgba(255,255,255,0.72),
+    1869px 1942px rgba(255,255,255,0.75),
+    1436px 1918px rgba(255,255,255,0.40),
+    400px 1810px rgba(255,255,255,0.64),
+    293px 1250px rgba(255,255,255,0.80),
+    1615px 553px rgba(255,255,255,0.47),
+    455px 1593px rgba(255,255,255,0.30),
+    1993px 1080px rgba(255,255,255,0.61),
+    1611px 1230px rgba(255,255,255,0.76),
+    665px 772px rgba(255,255,255,0.41),
+    993px 1555px rgba(255,255,255,0.39),
+    843px 1734px rgba(255,255,255,0.74),
+    1189px 1681px rgba(255,255,255,0.42),
+    1448px 1128px rgba(255,255,255,0.65),
+    493px 1079px rgba(255,255,255,0.45),
+    1492px 608px rgba(255,255,255,0.64),
+    640px 601px rgba(255,255,255,0.63),
+    153px 1442px rgba(255,255,255,0.45),
+    959px 1307px rgba(255,255,255,0.73),
+    840px 898px rgba(255,255,255,0.41),
+    1693px 283px rgba(255,255,255,0.32),
+    787px 1294px rgba(255,255,255,0.64),
+    220px 1574px rgba(255,255,255,0.48),
+    263px 1645px rgba(255,255,255,0.39),
+    1591px 885px rgba(255,255,255,0.63),
+    548px 956px rgba(255,255,255,0.45),
+    1467px 1367px rgba(255,255,255,0.76),
+    921px 169px rgba(255,255,255,0.78),
+    874px 1852px rgba(255,255,255,0.79),
+    1469px 688px rgba(255,255,255,0.61),
+    1930px 1114px rgba(255,255,255,0.71),
+    1391px 1368px rgba(255,255,255,0.40),
+    1063px 1574px rgba(255,255,255,0.63),
+    1477px 348px rgba(255,255,255,0.60),
+    1660px 1613px rgba(255,255,255,0.69),
+    139px 125px rgba(255,255,255,0.53),
+    199px 1073px rgba(255,255,255,0.76),
+    633px 1411px rgba(255,255,255,0.42),
+    1464px 1962px rgba(255,255,255,0.67),
+    1435px 971px rgba(255,255,255,0.76),
+    608px 1588px rgba(255,255,255,0.52),
+    993px 984px rgba(255,255,255,0.58),
+    1070px 1058px rgba(255,255,255,0.45),
+    1356px 972px rgba(255,255,255,0.31),
+    1459px 465px rgba(255,255,255,0.31),
+    1531px 1273px rgba(255,255,255,0.60),
+    1347px 1752px rgba(255,255,255,0.47),
+    90px 175px rgba(255,255,255,0.73),
+    1156px 1143px rgba(255,255,255,0.41),
+    1090px 1960px rgba(255,255,255,0.74),
+    1393px 921px rgba(255,255,255,0.44),
+    996px 548px rgba(255,255,255,0.63),
+    594px 1438px rgba(255,255,255,0.64),
+    1361px 1075px rgba(255,255,255,0.55),
+    284px 1470px rgba(255,255,255,0.65),
+    912px 1473px rgba(255,255,255,0.56),
+    1089px 1384px rgba(255,255,255,0.68),
+    1747px 612px rgba(255,255,255,0.72),
+    1112px 1348px rgba(255,255,255,0.73),
+    1662px 93px rgba(255,255,255,0.65),
+    1363px 1429px rgba(255,255,255,0.68);
+  animation: a-star-yimk-1 3s linear infinite;
+}
+._star_yimk::after {
+  box-shadow:
+    429px 1167px rgba(200,200,255,0.50),
+    1152px 254px rgba(200,200,255,0.36),
+    1423px 620px rgba(200,200,255,0.34),
+    1752px 1936px rgba(200,200,255,0.37),
+    1545px 782px rgba(200,200,255,0.44),
+    16px 1286px rgba(200,200,255,0.47),
+    625px 711px rgba(200,200,255,0.46),
+    370px 1976px rgba(200,200,255,0.20),
+    748px 1229px rgba(200,200,255,0.48),
+    1545px 1137px rgba(200,200,255,0.39),
+    513px 1832px rgba(200,200,255,0.22),
+    201px 1694px rgba(200,200,255,0.40),
+    967px 1272px rgba(200,200,255,0.34),
+    1749px 1008px rgba(200,200,255,0.22),
+    3px 1192px rgba(200,200,255,0.27),
+    501px 715px rgba(200,200,255,0.32),
+    281px 1644px rgba(200,200,255,0.22),
+    761px 1075px rgba(200,200,255,0.30),
+    1803px 1112px rgba(200,200,255,0.40),
+    1651px 1479px rgba(200,200,255,0.49),
+    1814px 1159px rgba(200,200,255,0.29),
+    1359px 329px rgba(200,200,255,0.22),
+    1503px 1307px rgba(200,200,255,0.37),
+    326px 790px rgba(200,200,255,0.44),
+    162px 118px rgba(200,200,255,0.35),
+    1784px 1834px rgba(200,200,255,0.30),
+    322px 1311px rgba(200,200,255,0.49),
+    1483px 236px rgba(200,200,255,0.28),
+    526px 359px rgba(200,200,255,0.29),
+    1089px 1901px rgba(200,200,255,0.39),
+    988px 387px rgba(200,200,255,0.33),
+    1594px 480px rgba(200,200,255,0.33),
+    897px 419px rgba(200,200,255,0.48),
+    1495px 1144px rgba(200,200,255,0.31),
+    717px 19px rgba(200,200,255,0.42),
+    1149px 1256px rgba(200,200,255,0.29),
+    1777px 1929px rgba(200,200,255,0.34),
+    688px 707px rgba(200,200,255,0.37),
+    529px 1650px rgba(200,200,255,0.40),
+    1571px 280px rgba(200,200,255,0.22),
+    1445px 1658px rgba(200,200,255,0.36),
+    530px 1465px rgba(200,200,255,0.29),
+    366px 50px rgba(200,200,255,0.42),
+    1110px 1627px rgba(200,200,255,0.42),
+    1048px 793px rgba(200,200,255,0.41),
+    181px 1065px rgba(200,200,255,0.25),
+    1917px 1586px rgba(200,200,255,0.33),
+    145px 1356px rgba(200,200,255,0.37),
+    1605px 1185px rgba(200,200,255,0.39),
+    951px 1846px rgba(200,200,255,0.34),
+    1933px 1483px rgba(200,200,255,0.29),
+    119px 391px rgba(200,200,255,0.22),
+    1626px 1454px rgba(200,200,255,0.26),
+    1324px 1663px rgba(200,200,255,0.43),
+    1747px 124px rgba(200,200,255,0.31),
+    1150px 804px rgba(200,200,255,0.46),
+    178px 1893px rgba(200,200,255,0.47),
+    789px 1706px rgba(200,200,255,0.21),
+    1228px 1975px rgba(200,200,255,0.21),
+    337px 882px rgba(200,200,255,0.48);
+  animation: a-star-yimk-2 6s linear infinite;
+}
+._star_yimk > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes a-star-yimk-1 {
+  from { transform: translateY(0); }
+  to { transform: translateY(-2000px); }
+}
+@keyframes a-star-yimk-2 {
+  from { transform: translateY(0); opacity: 1; }
+  50% { opacity: 0.5; }
+  to { transform: translateY(-2000px); opacity: 0; }
+}
+
+
+._persp_tyc7 {
+  transition: transform 0.1s ease-out;
+  transform-style: preserve-3d;
+}
+._persp_tyc7-child {
+  transition: transform 0.2s ease-out;
 }

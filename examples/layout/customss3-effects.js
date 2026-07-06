@@ -25,6 +25,8 @@ class Aurora {
     this.bands = opts.bands || 24     // number of curtain bands
     this.time = 0
     this.running = false
+    // wave frequency multipliers — raised for faster, more dynamic motion
+    this.freq = opts.freq || 1.0
 
     this.resize()
     window.addEventListener('resize', () => this.resize())
@@ -50,7 +52,7 @@ class Aurora {
 
   _loop() {
     if (!this.running) return
-    this.time += 0.008 * this.speed
+    this.time += 0.012 * this.speed
     this._draw()
     requestAnimationFrame(() => this._loop())
   }
@@ -81,17 +83,18 @@ class Aurora {
       const c2 = this.colors[ci2]
 
       // Curtain height varies with sine waves (multiple frequencies for natural look)
-      const wave1 = Math.sin(t * 0.5 + phase) * 0.3
-      const wave2 = Math.sin(t * 0.8 + phase * 1.7) * 0.2
-      const wave3 = Math.sin(t * 1.2 + phase * 0.5 + 1) * 0.15
+      const f = this.freq * 1.5
+      const wave1 = Math.sin(t * f * 0.5 + phase) * 0.3
+      const wave2 = Math.sin(t * f * 0.8 + phase * 1.7 + 0.5) * 0.2
+      const wave3 = Math.sin(t * f * 1.4 + phase * 0.6 + 1.2) * 0.15
       const heightFactor = 0.4 + wave1 + wave2 + wave3
       const curtainH = Math.max(h * 0.1, h * heightFactor)
 
       // Horizontal sway
-      const sway = Math.sin(t * 0.3 + phase * 0.7) * bandW * 0.5
+      const sway = Math.sin(t * f * 0.4 + phase * 0.7) * bandW * 0.6
 
       // Vertical offset (curtain "hang" point)
-      const topY = h * 0.05 + Math.sin(t * 0.4 + phase * 1.2) * h * 0.05
+      const topY = h * 0.05 + Math.sin(t * f * 0.45 + phase * 1.2) * h * 0.06
 
       // Draw the curtain band as a vertical gradient strip
       const grad = ctx.createLinearGradient(x + sway, topY, x + sway + bandW * 0.6, topY + curtainH)
@@ -108,7 +111,7 @@ class Aurora {
       // Bezier curve for organic curtain shape
       const cx = x + sway
       const cw = bandW * 0.4
-      const midH = Math.sin(t * 0.6 + phase * 1.3) * h * 0.08
+      const midH = Math.sin(t * f * 0.7 + phase * 1.3) * h * 0.08
 
       ctx.moveTo(cx, topY)
       ctx.quadraticCurveTo(
@@ -139,14 +142,15 @@ class Aurora {
 class Glitch {
   constructor(element, opts = {}) {
     this.el = typeof element === 'string' ? document.querySelector(element) : element
-    this.speed = opts.speed || 300    // ms between glitch attacks
-    this.intensity = opts.intensity || 4  // pixel displacement max
-    this.text = this.el.textContent
+    this.speed = opts.speed || 400    // avg ms between attacks
+    this.intensity = opts.intensity || 3  // pixel displacement max
     this.running = false
     this._timer = null
-    this._animFrame = null
     this._glitching = false
-    this._originalText = this.el.innerHTML
+
+    // Ensure element has position for overlay
+    if (getComputedStyle(this.el).position === 'static')
+      this.el.style.position = 'relative'
   }
 
   start() {
@@ -158,79 +162,81 @@ class Glitch {
   stop() {
     this.running = false
     clearTimeout(this._timer)
-    if (this._animFrame) cancelAnimationFrame(this._animFrame)
-    this.el.innerHTML = this._originalText
-    this.el.style.textShadow = ''
-    this.el.style.transform = ''
+    this._cleanup()
   }
 
   _schedule() {
     if (!this.running) return
-    // Random interval between glitches (faster than configured for frequency)
     const delay = this.speed * (0.3 + Math.random() * 0.7)
     this._timer = setTimeout(() => this._attack(), delay)
+  }
+
+  _cleanup() {
+    const el = this.el
+    el.style.textShadow = ''
+    el.style.transform = ''
+    el.style.opacity = ''
+    el.style.clipPath = ''
+    el.style.letterSpacing = ''
+    // remove overlay if any
+    const ov = el.querySelector('[data-glitch-overlay]')
+    if (ov) ov.remove()
   }
 
   _attack() {
     if (!this.running) return
     this._glitching = true
-    const intensity = this.intensity
     const el = this.el
-    const text = this.text
-    const chars = text.split('')
+    const I = this.intensity
 
-    // Track original state for cleanup
-    const origShadow = el.style.textShadow
-    const origTransform = el.style.transform
+    // === Phase 1: RGB channel split via text-shadow ===
+    const rX = (Math.random() - 0.5) * I * 2
+    const gX = (Math.random() - 0.5) * I * 2
+    const bX = (Math.random() - 0.5) * I * 2
+    const offY = (Math.random() < 0.4) ? (Math.random() - 0.5) * I * 0.5 : 0
+    el.style.textShadow = [
+      `${rX}px ${offY}px rgba(255,0,0,0.75)`,
+      `${gX}px ${offY}px rgba(0,255,0,0.25)`,
+      `${bX}px ${offY}px rgba(0,0,255,0.7)`,
+      `${(Math.random()-0.5)*I*0.5}px ${offY}px rgba(255,255,255,0.1)`
+    ].join(',')
 
-    // Phase 1: RGB channel shift (chromatic aberration)
-    const rOff = (Math.random() - 0.5) * intensity * 2
-    const gOff = (Math.random() - 0.5) * intensity * 2
-    const bOff = (Math.random() - 0.5) * intensity * 2
-    el.style.textShadow = `
-      ${rOff}px 0 rgba(255,0,0,0.7),
-      ${gOff}px 0 rgba(0,255,0,0.3),
-      ${bOff}px 0 rgba(0,0,255,0.7)
-    `
+    // === Phase 2: horizontal shake + skew ===
+    const shakeX = (Math.random() - 0.5) * I * 2
+    const skewX = (Math.random() < 0.25) ? (Math.random() - 0.5) * 3 : 0
+    const scaleX = (Math.random() < 0.15) ? (0.95 + Math.random() * 0.1) : 1
+    const transY = (Math.random() - 0.5) * I * 0.3
+    el.style.transform = `translateX(${shakeX}px) translateY(${transY}px) skewX(${skewX}deg) scaleX(${scaleX})`
 
-    // Phase 2: Random slice displacement
-    // Insert spans with random horizontal offsets for character groups
-    const sliceCount = 1 + Math.floor(Math.random() * 3)
-    let html = ''
-    for (let i = 0; i < chars.length; i++) {
-      // 15% chance per character to start a glitch slice
-      if (Math.random() < 0.15 && i < chars.length - 2) {
-        const sliceLen = 1 + Math.floor(Math.random() * 4)
-        const sliceChars = chars.slice(i, Math.min(i + sliceLen, chars.length)).join('')
-        const offset = (Math.random() - 0.5) * intensity * 3
-        const blur = Math.random() * 2
-        html += `<span style="display:inline-block;transform:translateX(${offset}px);filter:blur(${blur}px);color:${Math.random() > 0.5 ? '#ff00c1' : '#00ffea'}">${sliceChars}</span>`
-        i += sliceLen - 1
-      } else {
-        html += chars[i]
-      }
+    // === Phase 3: clip-path to simulate torn rows ===
+    // Create the appearance of sliced/missing horizontal strips
+    if (Math.random() < 0.5) {
+      const h = el.offsetHeight
+      const y1 = Math.random() * h * 0.3
+      const y2 = y1 + 2 + Math.random() * 4
+      const y3 = Math.random() > 0.5 ? 0 : Math.random() * h * 0.7
+      const y4 = y3 + 1 + Math.random() * 3
+      const inset = `${y1}px ${Math.random()*5}px ${h-y2}px ${Math.random()*5}px`
+      el.style.clipPath = `inset(${inset})`
     }
-    el.innerHTML = html
 
-    // Phase 3: Full horizontal shake
-    const shakeX = (Math.random() - 0.5) * intensity * 2
-    el.style.transform = `translateX(${shakeX}px)`
-
-    // Phase 4: Sometimes add a flicker
+    // === Phase 4: letter-spacing jitter ===
     if (Math.random() < 0.3) {
-      el.style.opacity = '0.7'
-      setTimeout(() => { if (this.running) el.style.opacity = '1' }, 50 + Math.random() * 80)
+      const ls = (Math.random() - 0.5) * 4
+      el.style.letterSpacing = `${ls}px`
     }
 
-    // Cleanup after a random short duration
-    const duration = 80 + Math.random() * 200
+    // === Phase 5: opacity flicker ===
+    if (Math.random() < 0.25) {
+      el.style.opacity = `${0.6 + Math.random() * 0.3}`
+    }
+
+    // === Duration + cleanup ===
+    const duration = 60 + Math.random() * 180
     setTimeout(() => {
       if (!this.running) return
       this._glitching = false
-      el.innerHTML = this._originalText
-      el.style.textShadow = ''
-      el.style.transform = ''
-      el.style.opacity = '1'
+      this._cleanup()
       this._schedule()
     }, duration)
   }

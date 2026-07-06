@@ -1,104 +1,114 @@
 /*
  * CustomSS3 Demo — Example Input
  *
- * This file demonstrates CustomSS3 syntax extensions.
- * Run: node run-demo.js
- * Output goes to demo-output.css
+ * SHORTHAND SYNTAX EXTENSIONS:
+ *   aurora: blur(40px) speed(8s) colors(#667eea, #764ba2, #4facfe)
+ *   glitch: speed(3s) intensity(3)
+ *   blob:   speed(12s) colors(#667eea, #764ba2) size(200)
+ *   starfield: count(150) speed(4s)
+ *   perspective: depth(1000px) tilt(15)
+ *
+ * TRANSFORM SYNTAX EXTENSIONS:
+ *   @container (width > 400px) → @container (min-width: 401px)
+ *   @media (500px <= width < 1024px) → @media (min-width: 500px) ... (max-width: 1023px)
+ *   glass: blur(N) opacity(N) color(#X) border(W, C) → expanded backdrop-filter
+ *   neon: color(C) radius(N) intensity(N) → expanded text-shadow
+ *   background: mesh(#a, #b, #c) → expanded linear-gradient
+ *   display: masonry → display: grid
+ *   gap-x / gap-y → column-gap / row-gap
  */
 
-/* ─── 1. Container Query Operators ─── */
+/* ─── EFFECT: Aurora 极光流动背景 ─── */
+.aurora-hero {
+  aurora: blur(40px) speed(8s) colors(#667eea, #764ba2, #4facfe, #f093fb);
+  min-height: 300px;
+  border-radius: 16px;
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 
-.card-grid {
+/* ─── EFFECT: Gooey Blob 黏性流体 ─── */
+.blob-section {
+  blob: speed(10s) colors(#ff6b6b, #4ecdc4) size(180);
+  min-height: 280px;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── EFFECT: Glitch 故障文字 ─── */
+.glitch-title {
+  glitch: speed(2.5s) intensity(4);
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+}
+
+/* ─── EFFECT: Starfield 星场 ─── */
+.star-panel {
+  starfield: count(120) speed(3s);
+  min-height: 280px;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── EFFECT: 3D Perspective 透视卡片 ─── */
+.persp-wrapper {
+  perspective: depth(1000px) tilt(15);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
 
+/* ─── Container Query Operators ─── */
 @container (width > 400px) {
-  .card {
-    padding: 24px;
-    font-size: 1.125rem;
-  }
+  .card { padding: 24px; }
 }
-
-@container (300px < width < 800px) {
-  .card {
-    padding: 16px;
-  }
-}
-
 @container (aspect-ratio >= 0.75) {
-  .card {
-    flex-direction: row;
-  }
+  .card { flex-direction: row; }
 }
 
-/* ─── 2. Responsive Range Syntax ─── */
-
+/* ─── Responsive Range ─── */
 @media (500px <= width < 1024px) {
-  .sidebar {
-    display: none;
-  }
-  .main {
-    width: 100%;
-  }
+  .sidebar { display: none; }
 }
-
 @media (width >= 1400px) {
-  .container {
-    max-width: 1320px;
-    margin: 0 auto;
-  }
+  .container { max-width: 1320px; }
 }
 
-@media (width < 480px) {
-  .header {
-    padding: 8px;
-    font-size: 0.875rem;
-  }
-}
-
-/* ─── 3. Glass Effect ─── */
-
+/* ─── Glass Effect ─── */
 .modal {
   glass: blur(12px) opacity(0.85) color(#0a0a0a) border(1px, rgba(255,255,255,0.08));
 }
 
-.card-glass {
-  glass: blur(8px) opacity(0.9) color(#fff);
-}
-
-/* ─── 4. Neon Glow ─── */
-
+/* ─── Neon Glow ─── */
 .hero-title {
   neon: color(cyan) radius(4px) intensity(3);
   color: #fff;
   font-size: 3rem;
 }
 
-.neon-accent {
-  neon: color(#ff6bff) radius(3px) intensity(2);
-}
-
-/* ─── 5. Mesh Gradient ─── */
-
+/* ─── Mesh Gradient ─── */
 .hero-bg {
   background: mesh(#667eea, #764ba2, #f093fb, angle: 120deg);
 }
 
-.warm-gradient {
-  background: mesh(#ff6b6b, #feca57, #ff9ff3);
-}
-
-/* ─── 6. Layout Shorthands ─── */
-
+/* ─── Layout Shorthands ─── */
 .gallery {
   display: masonry;
   masonry-columns: 3;
   masonry-fill: dense;
   gap: 12px;
 }
-
 .card-layout {
   gap-x: 16px;
   gap-y: 24px;
