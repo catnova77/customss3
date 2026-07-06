@@ -66,6 +66,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
   border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px;text-align:center
 }
 
+/* Matrix */
+.matrix-wrap{position:relative;width:100%;height:320px;overflow:hidden;border-radius:16px}
+.matrix-wrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.matrix-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+
+/* Particle */
+.particle-wrap{position:relative;width:100%;height:300px;overflow:hidden;border-radius:16px}
+.particle-wrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.particle-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+
+/* Ripple */
+.ripple-wrap{position:relative;width:100%;height:300px;overflow:hidden;border-radius:16px}
+.ripple-wrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.ripple-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+
 /* Code */
 .code{
   background:#0a0a0a;border:1px solid #151515;border-radius:8px;padding:14px 16px;
@@ -163,8 +178,59 @@ footer a{color:#6c8cff;text-decoration:none}
     </div>
   </div>
 
+  <!-- ═══ MATRIX RAIN ═══ -->
+  <div class="section-title">04 · Matrix Rain 矩阵雨</div>
+  <div class="effects-grid">
+    <div class="card">
+      <div class="matrix-wrap">
+        <canvas id="matrixCanvas"></canvas>
+        <div class="matrix-overlay">
+          <div style="font-size:1.5rem;font-weight:200;letter-spacing:6px;color:rgba(255,255,255,0.5)">DIGITAL RAIN</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:4px">半分辨率 Canvas · 渐变拖尾 · 日文字符集</div>
+        </div>
+      </div>
+    </div>
+    <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="card-title"><span>matrix</span>( canvas, { speed, charSize } )</div>
+      <div class="code" style="margin-top:0">
+        <span class="kw">new</span> CSS3FX.MatrixRain(<span class="s">'#matrixCanvas'</span>, {
+          speed: <span class="n">40</span>,
+          charSize: <span class="n">14</span>,
+          color: <span class="s">'#0f0'</span>,
+          fade: <span class="kw">true</span>
+        }).start()
+      </div>
+      <div style="font-size:0.75rem;color:#444;margin-top:12px">
+        【0.5x 渲染】日文假名+数字字符雨 · 首字符白色发光 · 渐隐拖尾
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PARTICLE + RIPPLE ═══ -->
+  <div class="section-title">05 · Particle Swarm · Ripple 涟漪</div>
+  <div class="effects-grid">
+    <div class="card">
+      <div class="particle-wrap">
+        <canvas id="particleCanvas"></canvas>
+        <div class="particle-overlay">
+          <div style="font-size:1.5rem;font-weight:200;letter-spacing:6px;color:rgba(255,255,255,0.5)">PARTICLE SWARM</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:4px">鼠标悬浮吸引 · 邻近连线</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ripple-wrap">
+        <canvas id="rippleCanvas"></canvas>
+        <div class="ripple-overlay">
+          <div style="font-size:1.5rem;font-weight:200;letter-spacing:6px;color:rgba(255,255,255,0.5)">RIPPLE WAVE</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:4px">鼠标移动产生涟漪 · 自动模式</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ 3D PERSPECTIVE ═══ -->
-  <div class="section-title">04 · 3D Perspective</div>
+  <div class="section-title">06 · 3D Perspective</div>
   <div style="padding:24px;background:#0e0e0e;border:1px solid #1a1a1a;border-radius:16px;margin-bottom:64px">
     <div style="font-size:0.75rem;color:#555;margin-bottom:16px;font-family:monospace">
       <span style="color:#8c8cff">perspective:</span> depth(800px) tilt(15) · <span style="color:#555">// JS tracks mouse → CSS vars</span>
@@ -282,6 +348,32 @@ footer a{color:#6c8cff;text-decoration:none}
     @keyframes stars2 { from{transform:translateY(0)} 50%{opacity:0.5} to{transform:translateY(-2000px);opacity:0} }
   `
   document.head.appendChild(style)
+})()
+
+/* ─── Matrix Rain ─── */
+;(function(){
+  try {
+    const m = new CSS3FX.MatrixRain('#matrixCanvas', { speed: 50, charSize: 14, color: '#0f0' })
+    m.start()
+  } catch(e) { console.log('Matrix:', e.message) }
+})()
+
+/* ─── Particle Swarm ─── */
+;(function(){
+  try {
+    const p = new CSS3FX.ParticleSwarm('#particleCanvas', {
+      count: 80, speed: 1.5, connectDist: 130, particleSize: 2
+    })
+    p.start()
+  } catch(e) { console.log('Particle:', e.message) }
+})()
+
+/* ─── Ripple ─── */
+;(function(){
+  try {
+    const r = new CSS3FX.Ripple('#rippleCanvas', { count: 5, color: '#6c8cff', speed: 2 })
+    r.start()
+  } catch(e) { console.log('Ripple:', e.message) }
 })()
 
 /* ─── 3D Tilt ─── */

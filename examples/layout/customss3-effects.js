@@ -242,5 +242,363 @@ class Glitch {
   }
 }
 
-return { Aurora, Glitch }
+/* ─────────── MATRIX RAIN ─────────── */
+
+class MatrixRain {
+  constructor(canvas, opts = {}) {
+    this.canvas = typeof canvas === 'string' ? document.querySelector(canvas) : canvas
+    this.ctx = this.canvas.getContext('2d')
+    this.dpr = opts.dpr || 0.5
+    this.speed = opts.speed || 40
+    this.charSize = opts.charSize || 14
+    this.color = opts.color || '#0f0'
+    this.fade = opts.fade !== false
+    
+    this.chars = '日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾟﾁﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ0123456789'
+    this.drops = []
+    this.time = 0
+    this.running = false
+
+    this.resize()
+    window.addEventListener('resize', () => this.resize())
+  }
+
+  resize() {
+    const rect = this.canvas.getBoundingClientRect()
+    this.w = rect.width
+    this.h = rect.height
+    this.canvas.width = this.w * this.dpr
+    this.canvas.height = this.h * this.dpr
+    const cols = Math.ceil(this.canvas.width / (this.charSize * 0.6))
+    while (this.drops.length < cols) {
+      this.drops.push({
+        y: Math.random() * -this.canvas.height,
+        speed: 1 + Math.random() * 3,
+        chars: Math.floor(5 + Math.random() * 20)
+      })
+    }
+  }
+
+  start() {
+    if (this.running) return
+    this.running = true
+    this._loop()
+  }
+
+  stop() {
+    this.running = false
+  }
+
+  _loop() {
+    if (!this.running) return
+    this._draw()
+    setTimeout(() => requestAnimationFrame(() => this._loop()), this.speed)
+  }
+
+  _draw() {
+    const ctx = this.ctx
+    const w = this.canvas.width
+    const h = this.canvas.height
+    const cs = this.charSize * this.dpr
+
+    // Semi-transparent overlay for trail effect
+    if (this.fade) {
+      ctx.fillStyle = 'rgba(8, 8, 8, 0.08)'
+      ctx.fillRect(0, 0, w, h)
+    } else {
+      ctx.fillStyle = '#080808'
+      ctx.fillRect(0, 0, w, h)
+    }
+
+    ctx.font = `${cs}px monospace`
+    ctx.textAlign = 'center'
+
+    for (let i = 0; i < this.drops.length; i++) {
+      const drop = this.drops[i]
+      const x = i * cs * 0.6 + cs * 0.3
+
+      // Draw trail of characters
+      for (let j = 0; j < drop.chars; j++) {
+        const char = this.chars[Math.floor(Math.random() * this.chars.length)]
+        const y = drop.y - j * cs
+        if (y < -cs) break
+
+        if (j === 0) {
+          // Leading character — bright white
+          ctx.fillStyle = '#fff'
+          ctx.shadowColor = this.color
+          ctx.shadowBlur = 8
+        } else if (j < 3) {
+          ctx.fillStyle = this.color
+          ctx.shadowBlur = 3
+        } else {
+          // Trail — fading
+          const alpha = 1 - (j / drop.chars) * 0.8
+          ctx.fillStyle = `rgba(0, 255, 0, ${alpha * 0.5})`
+          ctx.shadowBlur = 0
+        }
+        ctx.fillText(char, x, y)
+      }
+      ctx.shadowBlur = 0
+
+      // Move drop down
+      drop.y += drop.speed * this.dpr
+      
+      // Reset at bottom or randomly
+      if (drop.y > h + drop.chars * cs) {
+        drop.y = Math.random() * -h * 0.5
+        drop.speed = 1 + Math.random() * 3
+        drop.chars = Math.floor(5 + Math.random() * 20)
+      }
+    }
+  }
+}
+
+
+/* ─────────── PARTICLE SWARM ─────────── */
+
+class ParticleSwarm {
+  constructor(canvas, opts = {}) {
+    this.canvas = typeof canvas === 'string' ? document.querySelector(canvas) : canvas
+    this.ctx = this.canvas.getContext('2d')
+    this.count = opts.count || 80
+    this.speed = opts.speed || 1.5
+    this.connectDist = opts.connectDist || 120
+    this.particleSize = opts.particleSize || 2
+    this.colors = opts.colors || ['#6c8cff', '#8c6cff', '#6cffcc']
+
+    this.mouse = { x: -9999, y: -9999 }
+    this.particles = []
+    this.running = false
+
+    this.resize()
+    window.addEventListener('resize', () => this.resize())
+    this.canvas.addEventListener('mousemove', (e) => {
+      const rect = this.canvas.getBoundingClientRect()
+      this.mouse.x = (e.clientX - rect.left) * this.dpr
+      this.mouse.y = (e.clientY - rect.top) * this.dpr
+    })
+    this.canvas.addEventListener('mouseleave', () => {
+      this.mouse.x = -9999
+      this.mouse.y = -9999
+    })
+  }
+
+  resize() {
+    const rect = this.canvas.getBoundingClientRect()
+    this.dpr = 1
+    this.w = rect.width
+    this.h = rect.height
+    this.canvas.width = this.w
+    this.canvas.height = this.h
+    this._initParticles()
+  }
+
+  _initParticles() {
+    this.particles = Array.from({ length: this.count }, () => ({
+      x: Math.random() * this.w,
+      y: Math.random() * this.h,
+      vx: (Math.random() - 0.5) * this.speed,
+      vy: (Math.random() - 0.5) * this.speed,
+      size: 1 + Math.random() * this.particleSize,
+      color: this.colors[Math.floor(Math.random() * this.colors.length)]
+    }))
+  }
+
+  start() {
+    if (this.running) return
+    this.running = true
+    this._loop()
+  }
+
+  stop() {
+    this.running = false
+  }
+
+  _loop() {
+    if (!this.running) return
+    this._draw()
+    requestAnimationFrame(() => this._loop())
+  }
+
+  _draw() {
+    const ctx = this.ctx
+    const w = this.w
+    const h = this.h
+
+    ctx.clearRect(0, 0, w, h)
+    ctx.fillStyle = '#080808'
+    ctx.fillRect(0, 0, w, h)
+
+    const particles = this.particles
+    const mx = this.mouse.x
+    const my = this.mouse.y
+
+    // Update + draw particles
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i]
+
+      // Mouse interaction — gentle pull
+      const dx = mx - p.x
+      const dy = my - p.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist < 200 && dist > 0) {
+        const force = (200 - dist) / 200 * 0.05
+        p.vx += (dx / dist) * force
+        p.vy += (dy / dist) * force
+      }
+
+      p.x += p.vx
+      p.y += p.vy
+
+      // Damping
+      p.vx *= 0.99
+      p.vy *= 0.99
+
+      // Boundary wrap
+      if (p.x < 0) p.x = w
+      if (p.x > w) p.x = 0
+      if (p.y < 0) p.y = h
+      if (p.y > h) p.y = 0
+
+      // Draw particle
+      ctx.fillStyle = p.color
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    // Draw connections
+    const maxDist = this.connectDist
+    ctx.lineWidth = 0.5
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i]
+        const b = particles[j]
+        const dx = a.x - b.x
+        const dy = a.y - b.y
+        const dist = dx * dx + dy * dy
+        if (dist < maxDist * maxDist) {
+          const alpha = 1 - dist / (maxDist * maxDist)
+          ctx.strokeStyle = `rgba(108, 140, 255, ${alpha * 0.4})`
+          ctx.beginPath()
+          ctx.moveTo(a.x, a.y)
+          ctx.lineTo(b.x, b.y)
+          ctx.stroke()
+        }
+      }
+    }
+  }
+}
+
+
+/* ─────────── RIPPLE ─────────── */
+
+class Ripple {
+  constructor(canvas, opts = {}) {
+    this.canvas = typeof canvas === 'string' ? document.querySelector(canvas) : canvas
+    this.ctx = this.canvas.getContext('2d')
+    this.count = opts.count || 5
+    this.color = opts.color || '#6c8cff'
+    this.speed = opts.speed || 2
+
+    this.ripples = []
+    this.running = false
+    this.autoMode = true
+
+    this.resize()
+    window.addEventListener('resize', () => this.resize())
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      const rect = this.canvas.getBoundingClientRect()
+      const x = (e.clientX - rect.left) * this.dpr
+      const y = (e.clientY - rect.top) * this.dpr
+      // Emit a new ripple wave
+      if (this.running && this.ripples.length < 8) {
+        this.ripples.push({
+          x, y,
+          r: 0,
+          speed: 1.5 + Math.random() * this.speed,
+          alpha: 0.6 + Math.random() * 0.3,
+          growing: true
+        })
+      }
+      this.autoMode = false
+      clearTimeout(this._autoTimer)
+      this._autoTimer = setTimeout(() => { this.autoMode = true }, 2000)
+    })
+  }
+
+  resize() {
+    const rect = this.canvas.getBoundingClientRect()
+    this.dpr = 1
+    this.w = rect.width
+    this.h = rect.height
+    this.canvas.width = this.w
+    this.canvas.height = this.h
+  }
+
+  start() {
+    if (this.running) return
+    this.running = true
+    this._loop()
+  }
+
+  stop() {
+    this.running = false
+  }
+
+  _loop() {
+    if (!this.running) return
+    this._draw()
+    requestAnimationFrame(() => this._loop())
+  }
+
+  _draw() {
+    const ctx = this.ctx
+    const w = this.w
+    const h = this.h
+
+    ctx.clearRect(0, 0, w, h)
+
+    // Auto ripples
+    if (this.autoMode && this.ripples.length < 3 && Math.random() < 0.02) {
+      this.ripples.push({
+        x: (0.2 + Math.random() * 0.6) * w,
+        y: (0.2 + Math.random() * 0.6) * h,
+        r: 0,
+        speed: 1 + Math.random() * this.speed,
+        alpha: 0.3 + Math.random() * 0.3,
+        growing: true
+      })
+    }
+
+    const color = this.color
+    for (let i = this.ripples.length - 1; i >= 0; i--) {
+      const rip = this.ripples[i]
+      rip.r += rip.speed * this.dpr
+
+      // Draw ripple rings
+      for (let ring = 0; ring < 3; ring++) {
+        const r = rip.r - ring * 8
+        if (r < 0) continue
+        const alpha = rip.alpha * (1 - r / Math.max(w, h) * 1.5)
+        if (alpha <= 0) continue
+        ctx.strokeStyle = color.replace(')', `, ${alpha.toFixed(2)})`).replace('rgb', 'rgba')
+        ctx.lineWidth = 1 + (1 - alpha / rip.alpha) * 2
+        ctx.beginPath()
+        ctx.arc(rip.x, rip.y, r, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+
+      // Remove faded ripples
+      if (rip.r > Math.max(w, h) * 0.7) {
+        this.ripples.splice(i, 1)
+      }
+    }
+  }
+}
+
+
+return { Aurora, Glitch, MatrixRain, ParticleSwarm, Ripple }
 })()
