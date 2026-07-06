@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CustomSS3 — Visual Effects</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#080808;color:#e0e0e0}
+.container{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+.section-title{font-size:0.85rem;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:3px;margin-bottom:24px;border-top:1px solid #1a1a1a;padding-top:24px}
+
+.effects-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:64px}
+@media(max-width:768px){.effects-grid{grid-template-columns:1fr}}
+
+/* Card base */
+.card{
+  background:#0e0e0e;border:1px solid #1a1a1a;border-radius:16px;overflow:hidden;
+  position:relative
+}
+.card-pad{padding:32px}
+.card-title{font-size:0.75rem;color:#666;margin-bottom:16px;font-family:'JetBrains Mono',monospace}
+.card-title span{color:#8c8cff}
+
+/* Aurora */
+.aurora-wrap{position:relative;width:100%;height:340px;overflow:hidden;border-radius:16px}
+.aurora-wrap canvas{position:absolute;inset:0;width:100%;height:100%;filter:blur(6px);image-rendering:auto}
+.aurora-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.aurora-overlay h2{font-size:2rem;font-weight:200;letter-spacing:12px;color:#fff;text-shadow:0 0 40px rgba(255,255,255,0.15)}
+.aurora-overlay p{font-size:0.8rem;color:rgba(255,255,255,0.35);letter-spacing:2px}
+
+/* Glitch */
+.glitch-display{
+  font-size:4rem;font-weight:900;text-align:center;
+  font-family:'Impact','Arial Black',sans-serif;
+  letter-spacing:4px;color:#fff;cursor:default;
+  padding:24px 0;line-height:1.2
+}
+.glitch-sub{color:#444;font-size:0.8rem;text-align:center;font-family:monospace;margin-top:8px}
+
+/* Blob */
+.blob-wrap{position:relative;width:100%;height:300px;overflow:hidden;border-radius:16px}
+.blob-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+
+/* Starfield */
+.star-wrap{position:relative;width:100%;height:280px;overflow:hidden;border-radius:16px}
+.star-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+
+/* Perspective */
+.persp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.persp-card{
+  background:linear-gradient(135deg,#111,#1a1a1a);border:1px solid #222;border-radius:12px;
+  padding:24px 20px;text-align:center;cursor:pointer;user-select:none;
+  transition:transform 0.1s ease-out;transform-style:preserve-3d;
+  perspective:800px
+}
+.persp-card:hover{transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale3d(1.08,1.08,1.08)}
+.persp-card .icon{font-size:2rem;margin-bottom:8px;transform:translateZ(20px)}
+.persp-card h3{font-size:0.9rem;margin-bottom:4px;transform:translateZ(10px)}
+.persp-card p{font-size:0.75rem;color:#555;transform:translateZ(5px)}
+
+/* Glass */
+.glass-panel{
+  background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px;text-align:center
+}
+
+/* Code */
+.code{
+  background:#0a0a0a;border:1px solid #151515;border-radius:8px;padding:14px 16px;
+  font-family:'JetBrains Mono','Fira Code',monospace;font-size:0.75rem;line-height:1.7;
+  color:#666;overflow-x:auto;margin-top:12px
+}
+.code .cm{color:#333}
+.code .kw{color:#8c8cff}
+.code .s{color:#6cf}
+.code .n{color:#f9f}
+
+footer{text-align:center;padding:32px 0;color:#222;font-size:0.75rem}
+footer a{color:#6c8cff;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ═══ AURORA ═══ -->
+  <div class="section-title">01 · Aurora 极光光幕</div>
+  <div class="effects-grid">
+    <div class="card">
+      <div class="aurora-wrap">
+        <canvas id="auroraCanvas"></canvas>
+        <div class="aurora-overlay">
+          <h2>AURORA</h2>
+          <p>Canvas bezier curtain · 24 bands · real-time wave</p>
+        </div>
+      </div>
+    </div>
+    <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="card-title"><span>aurora</span>( canvas, { colors, speed, bands } )</div>
+      <div class="code" style="margin-top:0">
+        <span class="cm">// JS Runtime · half-res canvas + CSS blur</span>
+        <span class="kw">new</span> CSS3FX.Aurora(<span class="s">'#auroraCanvas'</span>, {
+          colors: [
+            <span class="s">[0x66,0x7e,0xea]</span>,  <span class="cm">// blue</span>
+            <span class="s">[0x76,0x4b,0xa2]</span>,  <span class="cm">// purple</span>
+            <span class="s">[0x4f,0xac,0xfe]</span>,  <span class="cm">// light blue</span>
+            <span class="s">[0xf0,0x93,0xfb]</span>,  <span class="cm">// pink</span>
+          ],
+          speed: <span class="n">0.3</span>,
+          bands: <span class="n">24</span>
+        }).start()
+      </div>
+      <div style="font-size:0.75rem;color:#444;margin-top:12px">
+        24 条贝塞尔曲线光幕 · 多频正弦波驱动 · 0.5x 渲染 + CSS blur(6px) 柔化
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GLITCH ═══ -->
+  <div class="section-title">02 · Glitch 像素故障</div>
+  <div class="effects-grid">
+    <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="card-title"><span>glitch</span>( element, { speed, intensity } )</div>
+      <div class="code" style="margin-top:0">
+        <span class="kw">new</span> CSS3FX.Glitch(<span class="s">'.glitch-target'</span>, {
+          speed: <span class="n">300</span>,     <span class="cm">// ms between attacks</span>
+          intensity: <span class="n">4</span>   <span class="cm">// pixel displacement</span>
+        }).start()
+      </div>
+      <div style="font-size:0.75rem;color:#444;margin-top:12px">
+        随机间隔攻击 · RGB 通道分离 · 字符分片偏移 · 帧抖动 + 闪烁
+      </div>
+    </div>
+    <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center;align-items:center">
+      <div class="glitch-display glitch-target" id="glitchEl">GLITCH</div>
+      <div class="glitch-sub" style="color:#444;font-size:0.7rem;font-family:monospace">JS-driven · random slice displacement</div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOB + STARFIELD ═══ -->
+  <div class="section-title">03 · Blob + Starfield</div>
+  <div class="effects-grid">
+    <div class="card">
+      <div class="blob-wrap" style="background:#0a0a0a">
+        <div style="position:absolute;inset:0;overflow:hidden">
+          <div id="blob1" style="position:absolute;width:180px;height:180px;border-radius:50%;background:#ff6b6b;filter:blur(40px);opacity:0.6;top:10%;left:10%"></div>
+          <div id="blob2" style="position:absolute;width:180px;height:180px;border-radius:50%;background:#4ecdc4;filter:blur(40px);opacity:0.6;bottom:10%;right:10%"></div>
+        </div>
+        <div class="blob-overlay">
+          <div style="font-size:1.5rem;font-weight:200;letter-spacing:6px;color:rgba(255,255,255,0.6)">GOOEY BLOB</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.25);margin-top:4px">border-radius morphing · CSS only</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="star-wrap" id="starWrap" style="background:#080810">
+        <div class="star-overlay">
+          <div style="font-size:1.5rem;font-weight:200;letter-spacing:6px;color:rgba(255,255,255,0.6)">STARFIELD</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.25);margin-top:4px">box-shadow particles · CSS only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 3D PERSPECTIVE ═══ -->
+  <div class="section-title">04 · 3D Perspective</div>
+  <div style="padding:24px;background:#0e0e0e;border:1px solid #1a1a1a;border-radius:16px;margin-bottom:64px">
+    <div style="font-size:0.75rem;color:#555;margin-bottom:16px;font-family:monospace">
+      <span style="color:#8c8cff">perspective:</span> depth(800px) tilt(15) · <span style="color:#555">// JS tracks mouse → CSS vars</span>
+    </div>
+    <div class="persp-grid" id="perspGrid">
+      <div class="persp-card" onmousemove="tilt(this,event)" onmouseleave="untilt(this)">
+        <div class="icon">🌌</div>
+        <h3>Deep Space</h3>
+        <p>rotateX/Y · scale on hover</p>
+      </div>
+      <div class="persp-card" onmousemove="tilt(this,event)" onmouseleave="untilt(this)">
+        <div class="icon">🌀</div>
+        <h3>Quantum</h3>
+        <p>perspective 800px</p>
+      </div>
+      <div class="persp-card" onmousemove="tilt(this,event)" onmouseleave="untilt(this)">
+        <div class="icon">⚡</div>
+        <h3>Neon Pulse</h3>
+        <p>translateZ children</p>
+      </div>
+    </div>
+    <div class="code" style="margin-bottom:0">
+      <span class="cm">/* CustomSS3 input */</span>
+      .wrapper { <span class="kw">perspective:</span> <span class="s">depth(800px) tilt(15)</span>; }
+      <span class="cm">/* ↓ expanded */</span>
+      .wrapper { perspective: 800px; }
+      .card { transition: transform 0.1s; transform-style: preserve-3d; }
+    </div>
+  </div>
+
+  <!-- ═══ HTML version comparison ═══ -->
+  <footer>CustomSS3 · <a href="https://github.com/catnova77/customss3">github.com/catnova77/customss3</a></footer>
+</div>
+
+<script src="customss3-effects.js"></script>
+<script>
+/* ─── Aurora ─── */
+(function(){
+  try {
+    const a = new CSS3FX.Aurora('#auroraCanvas', {
+      colors: [
+        [0x66, 0x7e, 0xea],
+        [0x76, 0x4b, 0xa2],
+        [0x4f, 0xac, 0xfe],
+        [0xf0, 0x93, 0xfb],
+      ],
+      speed: 0.3,
+      bands: 24
+    })
+    a.start()
+    setTimeout(() => a.stop(), 30000)
+  } catch(e) { console.log('Aurora:', e.message) }
+})()
+
+/* ─── Glitch ─── */
+;(function(){
+  try {
+    const g = new CSS3FX.Glitch('#glitchEl', { speed: 400, intensity: 5 })
+    g.start()
+  } catch(e) { console.log('Glitch:', e.message) }
+})()
+
+/* ─── Blob animation (CSS-only with JS for border-radius morphing) ─── */
+;(function(){
+  const b1 = document.getElementById('blob1')
+  const b2 = document.getElementById('blob2')
+  let t = 0
+  function animateBlob() {
+    t += 0.015
+    const br1 = morph(t, [
+      [50,50,50,50, 50,50,50,50],
+      [40,60,60,40, 60,40,60,40],
+      [60,40,40,60, 40,60,40,60],
+      [50,50,60,40, 50,60,40,50],
+      [40,60,50,50, 60,40,50,50],
+    ])
+    const br2 = morph(t + 2, [
+      [50,50,50,50, 50,50,50,50],
+      [60,40,50,50, 50,60,40,50],
+      [40,60,60,40, 60,40,50,50],
+      [50,40,60,50, 40,50,60,50],
+      [60,50,40,50, 50,40,60,50],
+    ])
+    b1.style.borderRadius = br1
+    b2.style.borderRadius = br2
+    b1.style.transform = `translate(${10+Math.sin(t)*20}px, ${10+Math.cos(t*0.7)*15}px)`
+    b2.style.transform = `translate(${-10+Math.sin(t*0.8+2)*20}px, ${-10+Math.cos(t*0.6+1)*15}px)`
+    b1.style.width = b1.style.height = `${180 + Math.sin(t*1.3)*20}px`
+    b2.style.width = b2.style.height = `${180 + Math.cos(t*0.9)*20}px`
+    requestAnimationFrame(animateBlob)
+  }
+  function morph(t, keyframes) {
+    const idx = Math.floor(t % keyframes.length)
+    const next = (idx + 1) % keyframes.length
+    const frac = (t % 1)
+    const f = keyframes[idx], n = keyframes[next]
+    return f.map((v,i) => `${v + (n[i]-v)*frac}%`).join(' / ')
+  }
+  animateBlob()
+})()
+
+/* ─── Starfield (box-shadow CSS) ─── */
+;(function(){
+  const wrap = document.getElementById('starWrap')
+  const style = document.createElement('style')
+  const rng = () => Math.floor(Math.random() * 2000)
+  const stars1 = Array.from({length: 80}, () => `${rng()}px ${rng()}px rgba(255,255,255,${(Math.random()*0.5+0.3).toFixed(2)})`).join(',')
+  const stars2 = Array.from({length: 40}, () => `${rng()}px ${rng()}px rgba(180,180,255,${(Math.random()*0.3+0.2).toFixed(2)})`).join(',')
+  style.textContent = `
+    #starWrap::before, #starWrap::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:0; }
+    #starWrap::before { box-shadow:${stars1}; animation:stars1 4s linear infinite; }
+    #starWrap::after { box-shadow:${stars2}; animation:stars2 8s linear infinite; }
+    #starWrap > * { position:relative; z-index:1; }
+    @keyframes stars1 { from{transform:translateY(0)} to{transform:translateY(-2000px)} }
+    @keyframes stars2 { from{transform:translateY(0)} 50%{opacity:0.5} to{transform:translateY(-2000px);opacity:0} }
+  `
+  document.head.appendChild(style)
+})()
+
+/* ─── 3D Tilt ─── */
+function tilt(el, e) {
+  const rect = el.getBoundingClientRect()
+  const x = e.clientX - rect.left, y = e.clientY - rect.top
+  const midX = rect.width / 2, midY = rect.height / 2
+  el.style.setProperty('--rx', ((y - midY) / midY * -15) + 'deg')
+  el.style.setProperty('--ry', ((x - midX) / midX * 15) + 'deg')
+}
+function untilt(el) {
+  el.style.setProperty('--rx', '0deg')
+  el.style.setProperty('--ry', '0deg')
+}
+</script>
+</body>
+</html>
