@@ -16,5 +16,13 @@
     "spring-physics",
     "oklch"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "type": "commonjs",
+  "dependencies": {
+    "postcss": "^8.5.16"
+  }
 }

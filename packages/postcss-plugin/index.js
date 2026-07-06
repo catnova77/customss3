@@ -1,12 +1,8 @@
 const features = {
   'container-queries': require('./features/container-queries'),
-  'spring-physics': require('./features/spring-physics'),
-  'color-system': require('./features/color-system'),
-  'typography': require('./features/typography'),
-  'layout': require('./features/layout'),
+  'responsive-range': require('./features/responsive-range'),
   'visual-effects': require('./features/visual-effects'),
-  'states-interactions': require('./features/states-interactions'),
-  'custom-functions': require('./features/custom-functions'),
+  'layout': require('./features/layout'),
 }
 
 module.exports = (opts = {}) => {

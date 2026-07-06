@@ -1,0 +1,105 @@
+/*
+ * CustomSS3 Demo — Example Input
+ *
+ * This file demonstrates CustomSS3 syntax extensions.
+ * Run: node run-demo.js
+ * Output goes to demo-output.css
+ */
+
+/* ─── 1. Container Query Operators ─── */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+@container (width > 400px) {
+  .card {
+    padding: 24px;
+    font-size: 1.125rem;
+  }
+}
+
+@container (300px < width < 800px) {
+  .card {
+    padding: 16px;
+  }
+}
+
+@container (aspect-ratio >= 0.75) {
+  .card {
+    flex-direction: row;
+  }
+}
+
+/* ─── 2. Responsive Range Syntax ─── */
+
+@media (500px <= width < 1024px) {
+  .sidebar {
+    display: none;
+  }
+  .main {
+    width: 100%;
+  }
+}
+
+@media (width >= 1400px) {
+  .container {
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+}
+
+@media (width < 480px) {
+  .header {
+    padding: 8px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ─── 3. Glass Effect ─── */
+
+.modal {
+  glass: blur(12px) opacity(0.85) color(#0a0a0a) border(1px, rgba(255,255,255,0.08));
+}
+
+.card-glass {
+  glass: blur(8px) opacity(0.9) color(#fff);
+}
+
+/* ─── 4. Neon Glow ─── */
+
+.hero-title {
+  neon: color(cyan) radius(4px) intensity(3);
+  color: #fff;
+  font-size: 3rem;
+}
+
+.neon-accent {
+  neon: color(#ff6bff) radius(3px) intensity(2);
+}
+
+/* ─── 5. Mesh Gradient ─── */
+
+.hero-bg {
+  background: mesh(#667eea, #764ba2, #f093fb, angle: 120deg);
+}
+
+.warm-gradient {
+  background: mesh(#ff6b6b, #feca57, #ff9ff3);
+}
+
+/* ─── 6. Layout Shorthands ─── */
+
+.gallery {
+  display: masonry;
+  masonry-columns: 3;
+  masonry-fill: dense;
+  gap: 12px;
+}
+
+.card-layout {
+  gap-x: 16px;
+  gap-y: 24px;
+}
