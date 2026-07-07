@@ -25,7 +25,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 
 /* Aurora */
 .aurora-wrap{position:relative;width:100%;height:340px;overflow:hidden;border-radius:16px}
-.aurora-wrap canvas{position:absolute;inset:0;width:100%;height:100%;filter:blur(6px);image-rendering:auto}
+.aurora-wrap canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:auto}
 .aurora-overlay{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
 .aurora-overlay h2{font-size:2rem;font-weight:200;letter-spacing:12px;color:#fff;text-shadow:0 0 40px rgba(255,255,255,0.15)}
 .aurora-overlay p{font-size:0.8rem;color:rgba(255,255,255,0.35);letter-spacing:2px}
@@ -112,18 +112,16 @@ footer a{color:#6c8cff;text-decoration:none}
       </div>
     </div>
     <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center">
-      <div class="card-title"><span>aurora</span>( canvas, { speed, rays, layers, freq } )</div>
+      <div class="card-title"><span>aurora</span>( canvas, { speed, freq } )</div>
       <div class="code" style="margin-top:0">
-        <span class="cm">// JS Runtime · half-res canvas + CSS blur</span>
+        <span class="cm">// JS Runtime · full res screen-blend · 90 rays</span>
         <span class="kw">new</span> CSS3FX.Aurora(<span class="s">'#auroraCanvas'</span>, {
-          speed: <span class="n">0.4</span>,
-          rays: <span class="n">70</span>,
-          layers: <span class="n">3</span>,
-          freq: <span class="n">2.0</span>
+          speed: <span class="n">0.3</span>,
+          freq: <span class="n">1.0</span>
         }).start()
       </div>
       <div style="font-size:0.75rem;color:#444;margin-top:12px">
-        70条垂直射线 · 3层幕帘 · 多频噪声驱动 · 绿色→紫色渐变 · 射线条纹 + 横向褶皱
+        90条渐变射线 · screen合成 · 全分辨率 · 5频噪声驱动波浪 · 绿色→紫色
       </div>
     </div>
   </div>
@@ -267,10 +265,8 @@ footer a{color:#6c8cff;text-decoration:none}
 (function(){
   try {
     const a = new CSS3FX.Aurora('#auroraCanvas', {
-      speed: 0.4,
-      rays: 70,
-      layers: 3,
-      freq: 2.0
+      speed: 0.3,
+      freq: 1.0
     })
     a.start()
   } catch(e) { console.log('Aurora:', e.message) }
