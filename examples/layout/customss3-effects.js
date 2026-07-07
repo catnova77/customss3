@@ -147,6 +147,7 @@ class Glitch {
     this.running = false
     this._timer = null
     this._glitching = false
+    this._timeouts = []
 
     if (getComputedStyle(this.el).position === 'static')
       this.el.style.position = 'relative'
@@ -177,6 +178,8 @@ class Glitch {
 
   _fullCleanup() {
     const el = this.el
+    this._timeouts.forEach(t => clearTimeout(t))
+    this._timeouts = []
     el.innerHTML = this._origHTML
     el.style.textShadow = ''
     el.style.transform = ''
@@ -191,6 +194,8 @@ class Glitch {
 
   _cleanup() {
     const el = this.el
+    this._timeouts.forEach(t => clearTimeout(t))
+    this._timeouts = []
     el.style.textShadow = ''
     el.style.transform = ''
     el.style.opacity = ''
@@ -222,43 +227,24 @@ class Glitch {
     return clone
   }
 
+  _track(t) {
+    this._timeouts.push(t)
+    return t
+  }
+
   _attack() {
     if (!this.running) return
     this._glitching = true
     const el = this.el
     const I = this.intensity
 
-    // === BURST: 3 rapid sub-attacks ===
-    const phases = [
-      () => this._phase1(el, I),
-      () => this._phase2(el, I),
-      () => this._phase3(el, I),
-      () => this._phase4(el, I),
-    ]
+    // === ALL phases fire simultaneously ===
+    this._phase1(el, I)
+    this._phase2(el, I)
+    this._phase3(el, I)
+    this._phase4(el, I)
 
-    // Pick a random subset (2-4 phases), shuffled
-    const shuffled = phases.sort(() => Math.random() - 0.5)
-    const count = 2 + Math.floor(Math.random() * 3)
-    const selected = shuffled.slice(0, Math.min(count, phases.length))
-
-    // Fire first phase immediately
-    selected[0]()
-
-    // Schedule subsequent phases with random delays
-    for (let i = 1; i < selected.length; i++) {
-      const delay = 30 + Math.random() * 80
-      setTimeout(() => {
-        if (!this.running) return
-        // Clear previous phase effects first
-        el.style.textShadow = ''
-        el.style.transform = ''
-        el.style.filter = ''
-        el.querySelectorAll('[data-glitch-layer]').forEach(n => n.remove())
-        selected[i]()
-      }, delay)
-    }
-
-    // Final cleanup after the full burst
+    // Single cleanup after burst
     const burstDuration = 120 + Math.random() * 250
     setTimeout(() => {
       if (!this.running) return
@@ -307,12 +293,12 @@ class Glitch {
     if (Math.random() < 0.35) {
       el.style.mixBlendMode = 'difference'
       el.style.filter = 'invert(1)'
-      setTimeout(() => {
+      this._track(setTimeout(() => {
         if (this.running) {
           el.style.mixBlendMode = ''
           el.style.filter = ''
         }
-      }, 40 + Math.random() * 60)
+      }, 40 + Math.random() * 60))
     }
 
     // Color block overlay
@@ -334,7 +320,7 @@ class Glitch {
         mix-blend-mode: screen;
       `
       el.appendChild(block)
-      setTimeout(() => { if (this.running) block.remove() }, 60 + Math.random() * 100)
+      this._track(setTimeout(() => { if (this.running) block.remove() }, 60 + Math.random() * 100))
     }
   }
 
@@ -343,7 +329,7 @@ class Glitch {
     el.style.transform = `translateX(${(Math.random()-0.5)*I*1.5}px) skewX(${(Math.random()-0.5)*2}deg)`
 
     // Create a middle-strip clone
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.6) {
       const clone = this._createClone('b')
       const stripY = (0.15 + Math.random() * 0.6) * el.offsetHeight
       const stripH = 4 + Math.random() * (el.offsetHeight * 0.35)
@@ -375,7 +361,7 @@ class Glitch {
       box-shadow: 0 0 4px rgba(255,255,255,0.3);
     `
     el.appendChild(scan)
-    setTimeout(() => { if (this.running) scan.remove() }, 30 + Math.random() * 50)
+    this._track(setTimeout(() => { if (this.running) scan.remove() }, 30 + Math.random() * 50))
 
     // Text jitter
     el.style.transform = `translateY(${(Math.random()-0.5)*I*0.5}px)`
