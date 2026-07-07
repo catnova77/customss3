@@ -142,15 +142,19 @@ class Aurora {
 class Glitch {
   constructor(element, opts = {}) {
     this.el = typeof element === 'string' ? document.querySelector(element) : element
-    this.speed = opts.speed || 400    // avg ms between attacks
-    this.intensity = opts.intensity || 3  // pixel displacement max
+    this.speed = opts.speed || 500     // avg ms between attacks
+    this.intensity = opts.intensity || 4
     this.running = false
     this._timer = null
     this._glitching = false
 
-    // Ensure element has position for overlay
     if (getComputedStyle(this.el).position === 'static')
       this.el.style.position = 'relative'
+
+    // Store original for clone creation
+    this._text = this.el.textContent
+    this._origHTML = this.el.innerHTML
+    this._origFontSize = getComputedStyle(this.el).fontSize
   }
 
   start() {
@@ -162,13 +166,27 @@ class Glitch {
   stop() {
     this.running = false
     clearTimeout(this._timer)
-    this._cleanup()
+    this._fullCleanup()
   }
 
   _schedule() {
     if (!this.running) return
-    const delay = this.speed * (0.3 + Math.random() * 0.7)
+    const delay = this.speed * (0.2 + Math.random() * 0.5)
     this._timer = setTimeout(() => this._attack(), delay)
+  }
+
+  _fullCleanup() {
+    const el = this.el
+    el.innerHTML = this._origHTML
+    el.style.textShadow = ''
+    el.style.transform = ''
+    el.style.opacity = ''
+    el.style.clipPath = ''
+    el.style.letterSpacing = ''
+    el.style.filter = ''
+    el.style.color = ''
+    el.style.mixBlendMode = ''
+    el.querySelectorAll('[data-glitch-layer]').forEach(n => n.remove())
   }
 
   _cleanup() {
@@ -178,9 +196,30 @@ class Glitch {
     el.style.opacity = ''
     el.style.clipPath = ''
     el.style.letterSpacing = ''
-    // remove overlay if any
-    const ov = el.querySelector('[data-glitch-overlay]')
-    if (ov) ov.remove()
+    el.style.filter = ''
+    el.style.color = ''
+    el.style.mixBlendMode = ''
+    el.querySelectorAll('[data-glitch-layer]').forEach(n => n.remove())
+  }
+
+  _createClone(id) {
+    const el = this.el
+    const clone = document.createElement('div')
+    clone.setAttribute('data-glitch-layer', id)
+    clone.textContent = this._text
+    clone.style.cssText = `
+      position: absolute; inset: 0;
+      font-size: ${this._origFontSize};
+      font-family: ${getComputedStyle(el).fontFamily};
+      font-weight: ${getComputedStyle(el).fontWeight};
+      letter-spacing: inherit;
+      text-align: inherit;
+      line-height: inherit;
+      pointer-events: none;
+      white-space: nowrap;
+    `
+    el.appendChild(clone)
+    return clone
   }
 
   _attack() {
@@ -189,56 +228,158 @@ class Glitch {
     const el = this.el
     const I = this.intensity
 
-    // === Phase 1: RGB channel split via text-shadow ===
-    const rX = (Math.random() - 0.5) * I * 2
-    const gX = (Math.random() - 0.5) * I * 2
-    const bX = (Math.random() - 0.5) * I * 2
-    const offY = (Math.random() < 0.4) ? (Math.random() - 0.5) * I * 0.5 : 0
-    el.style.textShadow = [
-      `${rX}px ${offY}px rgba(255,0,0,0.75)`,
-      `${gX}px ${offY}px rgba(0,255,0,0.25)`,
-      `${bX}px ${offY}px rgba(0,0,255,0.7)`,
-      `${(Math.random()-0.5)*I*0.5}px ${offY}px rgba(255,255,255,0.1)`
-    ].join(',')
+    // === BURST: 3 rapid sub-attacks ===
+    const phases = [
+      () => this._phase1(el, I),
+      () => this._phase2(el, I),
+      () => this._phase3(el, I),
+      () => this._phase4(el, I),
+    ]
 
-    // === Phase 2: horizontal shake + skew ===
-    const shakeX = (Math.random() - 0.5) * I * 2
-    const skewX = (Math.random() < 0.25) ? (Math.random() - 0.5) * 3 : 0
-    const scaleX = (Math.random() < 0.15) ? (0.95 + Math.random() * 0.1) : 1
-    const transY = (Math.random() - 0.5) * I * 0.3
-    el.style.transform = `translateX(${shakeX}px) translateY(${transY}px) skewX(${skewX}deg) scaleX(${scaleX})`
+    // Pick a random subset (2-4 phases), shuffled
+    const shuffled = phases.sort(() => Math.random() - 0.5)
+    const count = 2 + Math.floor(Math.random() * 3)
+    const selected = shuffled.slice(0, Math.min(count, phases.length))
 
-    // === Phase 3: clip-path to simulate torn rows ===
-    // Create the appearance of sliced/missing horizontal strips
-    if (Math.random() < 0.5) {
-      const h = el.offsetHeight
-      const y1 = Math.random() * h * 0.3
-      const y2 = y1 + 2 + Math.random() * 4
-      const y3 = Math.random() > 0.5 ? 0 : Math.random() * h * 0.7
-      const y4 = y3 + 1 + Math.random() * 3
-      const inset = `${y1}px ${Math.random()*5}px ${h-y2}px ${Math.random()*5}px`
-      el.style.clipPath = `inset(${inset})`
+    // Fire first phase immediately
+    selected[0]()
+
+    // Schedule subsequent phases with random delays
+    for (let i = 1; i < selected.length; i++) {
+      const delay = 30 + Math.random() * 80
+      setTimeout(() => {
+        if (!this.running) return
+        // Clear previous phase effects first
+        el.style.textShadow = ''
+        el.style.transform = ''
+        el.style.filter = ''
+        el.querySelectorAll('[data-glitch-layer]').forEach(n => n.remove())
+        selected[i]()
+      }, delay)
     }
 
-    // === Phase 4: letter-spacing jitter ===
-    if (Math.random() < 0.3) {
-      const ls = (Math.random() - 0.5) * 4
-      el.style.letterSpacing = `${ls}px`
-    }
-
-    // === Phase 5: opacity flicker ===
-    if (Math.random() < 0.25) {
-      el.style.opacity = `${0.6 + Math.random() * 0.3}`
-    }
-
-    // === Duration + cleanup ===
-    const duration = 60 + Math.random() * 180
+    // Final cleanup after the full burst
+    const burstDuration = 120 + Math.random() * 250
     setTimeout(() => {
       if (!this.running) return
       this._glitching = false
       this._cleanup()
       this._schedule()
-    }, duration)
+    }, burstDuration)
+  }
+
+  // Phase 1: RGB split + shake + clone tear
+  _phase1(el, I) {
+    // Aggressive RGB
+    const rX = (Math.random() - 0.5) * I * 2.5
+    const gX = (Math.random() - 0.5) * I * 2.5
+    const bX = (Math.random() - 0.5) * I * 2.5
+    el.style.textShadow = [
+      `${rX}px 0 rgba(255,0,0,0.85)`,
+      `${gX * 0.5}px ${(Math.random()-0.5)*I*0.5}px rgba(0,255,0,0.3)`,
+      `${bX}px 0 rgba(0,0,255,0.8)`,
+    ].join(',')
+
+    // Shake
+    el.style.transform = `translateX(${(Math.random()-0.5)*I*3}px) translateY(${(Math.random()-0.5)*I*0.5}px)`
+
+    // Clone tear — displace upper portion
+    if (Math.random() < 0.6) {
+      const clone = this._createClone('a')
+      const tearY = (0.2 + Math.random() * 0.4) * el.offsetHeight
+      const cloneH = el.offsetHeight - tearY
+      clone.style.cssText += `
+        clip-path: inset(${tearY}px 0 0 0);
+        transform: translateX(${(Math.random()-0.5)*I*4}px) translateY(${(Math.random()-0.5)*I*0.8}px);
+        opacity: ${0.7 + Math.random() * 0.3};
+        filter: blur(${Math.random() < 0.4 ? '1px' : '0'});
+      `
+      // Also clip the original to the top portion
+      el.style.clipPath = `inset(0 0 ${el.offsetHeight - tearY}px 0)`
+    }
+  }
+
+  // Phase 2: Color blocks + vertical tear
+  _phase2(el, I) {
+    el.style.transform = `translateX(${(Math.random()-0.5)*I*2.5}px)`
+
+    // Invert colors briefly
+    if (Math.random() < 0.35) {
+      el.style.mixBlendMode = 'difference'
+      el.style.filter = 'invert(1)'
+      setTimeout(() => {
+        if (this.running) {
+          el.style.mixBlendMode = ''
+          el.style.filter = ''
+        }
+      }, 40 + Math.random() * 60)
+    }
+
+    // Color block overlay
+    if (Math.random() < 0.4) {
+      const block = document.createElement('div')
+      block.setAttribute('data-glitch-layer', 'block')
+      const bw = 20 + Math.random() * 60
+      const bh = 2 + Math.random() * 6
+      const bx = Math.random() * (el.offsetWidth - bw)
+      const by = Math.random() * el.offsetHeight
+      const colors = ['#ff00c1', '#00ffea', '#ff0', '#f0f', '#0ff']
+      block.style.cssText = `
+        position: absolute;
+        left: ${bx}px; top: ${by}px;
+        width: ${bw}px; height: ${bh}px;
+        background: ${colors[Math.floor(Math.random()*colors.length)]};
+        opacity: ${0.4 + Math.random() * 0.4};
+        pointer-events: none;
+        mix-blend-mode: screen;
+      `
+      el.appendChild(block)
+      setTimeout(() => { if (this.running) block.remove() }, 60 + Math.random() * 100)
+    }
+  }
+
+  // Phase 3: Horizontal strip tear with clone
+  _phase3(el, I) {
+    el.style.transform = `translateX(${(Math.random()-0.5)*I*1.5}px) skewX(${(Math.random()-0.5)*2}deg)`
+
+    // Create a middle-strip clone
+    if (Math.random() < 0.5) {
+      const clone = this._createClone('b')
+      const stripY = (0.15 + Math.random() * 0.6) * el.offsetHeight
+      const stripH = 4 + Math.random() * (el.offsetHeight * 0.35)
+      clone.style.cssText += `
+        clip-path: inset(${stripY}px 0 ${el.offsetHeight - stripY - stripH}px 0);
+        transform: translateX(${(Math.random()-0.5)*I*6}px) scaleX(${0.9 + Math.random()*0.2});
+        opacity: 0.85;
+        color: ${['#ff00c1', '#00ffea', '#fff'][Math.floor(Math.random()*3)]};
+        filter: blur(${Math.random() < 0.5 ? '0.5px' : '0'});
+      `
+    }
+
+    // text jitter
+    el.style.letterSpacing = `${(Math.random()-0.5)*6}px`
+  }
+
+  // Phase 4: Screen tear + scan lines
+  _phase4(el, I) {
+    // Scan line overlay
+    const scan = document.createElement('div')
+    scan.setAttribute('data-glitch-layer', 'scan')
+    const sy = Math.random() * el.offsetHeight
+    scan.style.cssText = `
+      position: absolute;
+      left: 0; top: ${sy}px;
+      width: 100%; height: 1.5px;
+      background: rgba(255,255,255,0.6);
+      pointer-events: none;
+      box-shadow: 0 0 4px rgba(255,255,255,0.3);
+    `
+    el.appendChild(scan)
+    setTimeout(() => { if (this.running) scan.remove() }, 30 + Math.random() * 50)
+
+    // Text jitter
+    el.style.transform = `translateY(${(Math.random()-0.5)*I*0.5}px)`
+    el.style.letterSpacing = `${(Math.random()-0.5)*I}px`
   }
 }
 

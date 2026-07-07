@@ -32,10 +32,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 
 /* Glitch */
 .glitch-display{
-  font-size:4rem;font-weight:900;text-align:center;
+  font-size:5rem;font-weight:900;text-align:center;
   font-family:'Impact','Arial Black',sans-serif;
-  letter-spacing:4px;color:#fff;cursor:default;
-  padding:24px 0;line-height:1.2
+  letter-spacing:8px;color:#fff;cursor:default;
+  padding:32px 0;line-height:1.2;user-select:none
 }
 .glitch-sub{color:#444;font-size:0.8rem;text-align:center;font-family:monospace;margin-top:8px}
 
@@ -144,7 +144,7 @@ footer a{color:#6c8cff;text-decoration:none}
         }).start()
       </div>
       <div style="font-size:0.75rem;color:#444;margin-top:12px">
-        随机间隔攻击 · RGB 通道分离 · 字符分片偏移 · 帧抖动 + 闪烁
+        爆破式多阶段攻击 · 多克隆图层撕裂 · RGB 通道分离 · 颜色块闪烁 · 扫描线 · 反向色
       </div>
     </div>
     <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center;align-items:center">
@@ -288,7 +288,7 @@ footer a{color:#6c8cff;text-decoration:none}
 /* ─── Glitch ─── */
 ;(function(){
   try {
-    const g = new CSS3FX.Glitch('#glitchEl', { speed: 400, intensity: 3 })
+    const g = new CSS3FX.Glitch('#glitchEl', { speed: 350, intensity: 5 })
     g.start()
   } catch(e) { console.log('Glitch:', e.message) }
 })()
