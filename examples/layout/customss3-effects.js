@@ -14,19 +14,13 @@ class Aurora {
   constructor(canvas, opts = {}) {
     this.canvas = typeof canvas === 'string' ? document.querySelector(canvas) : canvas
     this.ctx = this.canvas.getContext('2d')
-    this.dpr = opts.dpr || 0.5  // half-res for perf, canvas will be CSS-scaled
-    this.speed = opts.speed || 0.3
-    this.colors = opts.colors || [
-      [0x66, 0x7e, 0xea],  // blue
-      [0x76, 0x4b, 0xa2],  // purple
-      [0x4f, 0xac, 0xfe],  // light blue
-      [0xf0, 0x93, 0xfb],  // pink
-    ]
-    this.bands = opts.bands || 24     // number of curtain bands
+    this.dpr = opts.dpr || 0.5
+    this.speed = opts.speed || 0.4
+    this.freq = opts.freq || 1.0
+    this.rays = opts.rays || 70       // vertical ray count
+    this.layers = opts.layers || 3     // curtain layers for depth
     this.time = 0
     this.running = false
-    // wave frequency multipliers — raised for faster, more dynamic motion
-    this.freq = opts.freq || 1.0
 
     this.resize()
     window.addEventListener('resize', () => this.resize())
@@ -52,87 +46,139 @@ class Aurora {
 
   _loop() {
     if (!this.running) return
-    this.time += 0.012 * this.speed
+    this.time += 0.015 * this.speed
     this._draw()
     requestAnimationFrame(() => this._loop())
+  }
+
+  // Multi-octave wave — sum of sines at different frequencies/amplitudes
+  _wave(t, phases) {
+    return phases.reduce((sum, [f, a, p]) => sum + Math.sin(t * f + p) * a, 0)
   }
 
   _draw() {
     const ctx = this.ctx
     const w = this.canvas.width
     const h = this.canvas.height
+    const t = this.time
+    const f = this.freq * 1.5
     const dpr = this.dpr
+    const rays = this.rays
+    const rayW = w / rays
 
-    // Clear with slight trail for smooth motion (low opacity fill)
-    ctx.fillStyle = 'rgba(8, 8, 8, 0.15)'
+    // Very subtle trail for smooth motion
+    ctx.fillStyle = 'rgba(8, 8, 10, 0.06)'
     ctx.fillRect(0, 0, w, h)
 
-    const bands = this.bands
-    const bandW = w / bands
-    const t = this.time
+    // Draw 2 curtain layers for depth
+    for (let layer = 0; layer < this.layers; layer++) {
+      const layerOff = layer * 3.7  // phase offset for each layer
+      const layerAlpha = 0.5 + layer * 0.2
+      const layerSpeed = 1 - layer * 0.2  // deeper layers move slower
+      const heightScale = 1 + layer * 0.15
+      const lt = t * layerSpeed + layerOff
 
-    // Draw each curtain band
-    for (let i = 0; i < bands; i++) {
-      const x = i * bandW
-      const phase = i / bands * Math.PI * 2
+      // Base curtain edge — organic wave from sum of 5 sine octaves
+      const baseY = h * 0.15 + this._wave(lt * f * 0.3, [
+        [0.5, 0.12, 0],
+        [0.8, 0.08, 1.3],
+        [1.3, 0.06, 2.7],
+        [2.0, 0.04, 0.9],
+        [3.1, 0.03, 1.8],
+      ]) * h * 0.35
 
-      // Pick gradient colors
-      const ci1 = Math.floor((i / bands) * this.colors.length) % this.colors.length
-      const ci2 = (ci1 + 1) % this.colors.length
-      const c1 = this.colors[ci1]
-      const c2 = this.colors[ci2]
+      // For each vertical ray
+      for (let i = 0; i < rays; i++) {
+        const x = i * rayW
+        const phase = (i / rays) * Math.PI * 2
 
-      // Curtain height varies with sine waves (multiple frequencies for natural look)
-      const f = this.freq * 1.5
-      const wave1 = Math.sin(t * f * 0.5 + phase) * 0.3
-      const wave2 = Math.sin(t * f * 0.8 + phase * 1.7 + 0.5) * 0.2
-      const wave3 = Math.sin(t * f * 1.4 + phase * 0.6 + 1.2) * 0.15
-      const heightFactor = 0.4 + wave1 + wave2 + wave3
-      const curtainH = Math.max(h * 0.1, h * heightFactor)
+        // Curtain height at this ray — organic wave along the curtain
+        const curtainWave = this._wave(lt * f * 0.4 + phase, [
+          [0.5, 0.2, 0],
+          [0.9, 0.15, 1.1],
+          [1.6, 0.1, 2.3],
+          [2.8, 0.06, 0.4],
+        ])
+        const curtainH = Math.max(h * 0.05, baseY + curtainWave * h * 0.2)
+        const topY = h * 0.03 + this._wave(lt * f * 0.25 + phase * 0.6, [
+          [0.4, 0.04, 0],
+          [0.7, 0.03, 1.5],
+        ]) * h * 0.06
 
-      // Horizontal sway
-      const sway = Math.sin(t * f * 0.4 + phase * 0.7) * bandW * 0.6
+        // Horizontal sway
+        const sway = this._wave(lt * f * 0.3 + phase * 0.7, [
+          [0.5, 1, 0],
+          [0.8, 0.6, 1.2],
+        ]) * rayW * 1.5
 
-      // Vertical offset (curtain "hang" point)
-      const topY = h * 0.05 + Math.sin(t * f * 0.45 + phase * 1.2) * h * 0.06
+        // Ray brightness variation (vertical striations)
+        const raySeed = i * 0.3 + layer * 2
+        const rayBright = 0.6 + 0.4 * (
+          Math.sin(raySeed + lt * f * 0.1) * 0.4 +
+          Math.sin(raySeed * 2.3 + lt * f * 0.15) * 0.3 +
+          Math.sin(raySeed * 5.1 + lt * f * 0.2) * 0.3
+        )
 
-      // Draw the curtain band as a vertical gradient strip
-      const grad = ctx.createLinearGradient(x + sway, topY, x + sway + bandW * 0.6, topY + curtainH)
-      const alpha = 0.08 + Math.sin(t + phase * 2) * 0.04 + 0.04
-      grad.addColorStop(0, `rgba(${c1[0]},${c1[1]},${c1[2]},${alpha * 1.5})`)
-      grad.addColorStop(0.3, `rgba(${c1[0]},${c1[1]},${c1[2]},${alpha})`)
-      grad.addColorStop(0.5, `rgba(${c2[0]},${c2[1]},${c2[2]},${alpha * 0.8})`)
-      grad.addColorStop(0.7, `rgba(${c2[0]},${c2[1]},${c2[2]},${alpha * 0.4})`)
-      grad.addColorStop(1, `rgba(${c2[0]},${c2[1]},${c2[2]},0)`)
+        // Horizontal banding (aurora folds)
+        const foldPhase = phase * 2 + lt * f * 0.2
+        const fold = 0.7 + 0.3 * Math.sin(foldPhase)
 
-      ctx.fillStyle = grad
-      ctx.beginPath()
+        // Alpha pulsing
+        const pulse = 0.6 + 0.4 * Math.sin(lt * f * 0.15 + phase * 0.5)
 
-      // Bezier curve for organic curtain shape
-      const cx = x + sway
-      const cw = bandW * 0.4
-      const midH = Math.sin(t * f * 0.7 + phase * 1.3) * h * 0.08
+        // Top color: purple-blue
+        const tp = 0.5 + 0.5 * Math.sin(lt * f * 0.1 + phase)
+        const rTop = 80 + tp * 60
+        const gTop = 40 + tp * 40
+        const bTop = 160 + tp * 80
 
-      ctx.moveTo(cx, topY)
-      ctx.quadraticCurveTo(
-        cx + cw * 0.5, topY + curtainH * 0.3 + midH,
-        cx + cw * 0.3, topY + curtainH * 0.6
-      )
-      ctx.quadraticCurveTo(
-        cx + cw * 0.2, topY + curtainH * 0.8 - midH,
-        cx, topY + curtainH
-      )
-      ctx.quadraticCurveTo(
-        cx - cw * 0.2, topY + curtainH * 0.8 + midH,
-        cx - cw * 0.3, topY + curtainH * 0.6
-      )
-      ctx.quadraticCurveTo(
-        cx - cw * 0.5, topY + curtainH * 0.3 - midH,
-        cx, topY
-      )
-      ctx.closePath()
-      ctx.fill()
+        // Bottom color: green-teal
+        const rBot = 10
+        const gBot = 200 + Math.sin(lt * f * 0.08 + phase * 0.3) * 40
+        const bBot = 120 + Math.sin(lt * f * 0.12 + phase * 0.5) * 40
+
+        const alpha = layerAlpha * rayBright * fold * pulse * 0.25
+
+        // Draw vertical ray as thin gradient strip
+        const grad = ctx.createLinearGradient(
+          x + sway, topY,
+          x + sway + rayW * 0.5, topY + curtainH
+        )
+        grad.addColorStop(0, `rgba(${rTop|0},${gTop|0},${bTop|0},${alpha * 1.2})`)
+        grad.addColorStop(0.15, `rgba(${rTop|0},${gTop|0},${bTop|0},${alpha})`)
+        grad.addColorStop(0.4, `rgba(${(rTop+rBot)/2|0},${(gTop+gBot)/2|0},${(bTop+bBot)/2|0},${alpha * 0.7})`)
+        grad.addColorStop(0.7, `rgba(${rBot},${gBot|0},${bBot|0},${alpha * 0.3})`)
+        grad.addColorStop(1, `rgba(${rBot},${gBot|0},${bBot|0},0)`)
+
+        ctx.fillStyle = grad
+        ctx.fillRect(x + sway, topY, rayW * 0.55, curtainH + 10)
+      }
     }
+
+    // 3rd layer: subtle horizontal glow bands (aurora folds)
+    ctx.globalCompositeOperation = 'screen'
+    for (let i = 0; i < 3; i++) {
+      const ly = h * 0.2 + this._wave(t * f * 0.2 + i * 5, [
+        [0.4, 0.15, 0],
+        [0.7, 0.1, 1.7],
+      ]) * h * 0.4
+      const lh = 8 + 4 * Math.sin(t * f * 0.3 + i * 2)
+      const lx = this._wave(t * f * 0.15 + i * 3, [
+        [0.3, 0.3, 0],
+        [0.6, 0.2, 2.1],
+      ]) * w * 0.2
+
+      const grad = ctx.createRadialGradient(
+        w * 0.5 + lx, ly, 0,
+        w * 0.5 + lx, ly, w * 0.3
+      )
+      grad.addColorStop(0, `rgba(100,255,150,0.04)`)
+      grad.addColorStop(0.5, `rgba(80,180,255,0.02)`)
+      grad.addColorStop(1, `rgba(0,0,0,0)`)
+      ctx.fillStyle = grad
+      ctx.fillRect(0, 0, w, h)
+    }
+    ctx.globalCompositeOperation = 'source-over'
   }
 }
 

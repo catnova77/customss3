@@ -112,22 +112,18 @@ footer a{color:#6c8cff;text-decoration:none}
       </div>
     </div>
     <div class="card card-pad" style="display:flex;flex-direction:column;justify-content:center">
-      <div class="card-title"><span>aurora</span>( canvas, { colors, speed, bands } )</div>
+      <div class="card-title"><span>aurora</span>( canvas, { speed, rays, layers, freq } )</div>
       <div class="code" style="margin-top:0">
         <span class="cm">// JS Runtime · half-res canvas + CSS blur</span>
         <span class="kw">new</span> CSS3FX.Aurora(<span class="s">'#auroraCanvas'</span>, {
-          colors: [
-            <span class="s">[0x66,0x7e,0xea]</span>,  <span class="cm">// blue</span>
-            <span class="s">[0x76,0x4b,0xa2]</span>,  <span class="cm">// purple</span>
-            <span class="s">[0x4f,0xac,0xfe]</span>,  <span class="cm">// light blue</span>
-            <span class="s">[0xf0,0x93,0xfb]</span>,  <span class="cm">// pink</span>
-          ],
-          speed: <span class="n">0.3</span>,
-          bands: <span class="n">24</span>
+          speed: <span class="n">0.4</span>,
+          rays: <span class="n">70</span>,
+          layers: <span class="n">3</span>,
+          freq: <span class="n">2.0</span>
         }).start()
       </div>
       <div style="font-size:0.75rem;color:#444;margin-top:12px">
-        24 条贝塞尔曲线光幕 · 多频正弦波驱动 · 0.5x 渲染 + CSS blur(6px) 柔化
+        70条垂直射线 · 3层幕帘 · 多频噪声驱动 · 绿色→紫色渐变 · 射线条纹 + 横向褶皱
       </div>
     </div>
   </div>
@@ -271,14 +267,9 @@ footer a{color:#6c8cff;text-decoration:none}
 (function(){
   try {
     const a = new CSS3FX.Aurora('#auroraCanvas', {
-      colors: [
-        [0x66, 0x7e, 0xea],
-        [0x76, 0x4b, 0xa2],
-        [0x4f, 0xac, 0xfe],
-        [0xf0, 0x93, 0xfb],
-      ],
-      speed: 0.3,
-      bands: 24,
+      speed: 0.4,
+      rays: 70,
+      layers: 3,
       freq: 2.0
     })
     a.start()
