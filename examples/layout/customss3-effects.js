@@ -62,123 +62,92 @@ class Aurora {
     const h = this.canvas.height
     const t = this.time
     const f = this.freq * 1.5
-    const dpr = this.dpr
-    const rays = this.rays
-    const rayW = w / rays
 
-    // Very subtle trail for smooth motion
-    ctx.fillStyle = 'rgba(8, 8, 10, 0.06)'
+    // Very subtle trail
+    ctx.fillStyle = 'rgba(8, 10, 12, 0.03)'
     ctx.fillRect(0, 0, w, h)
 
-    // Draw 2 curtain layers for depth
-    for (let layer = 0; layer < this.layers; layer++) {
-      const layerOff = layer * 3.7  // phase offset for each layer
-      const layerAlpha = 0.5 + layer * 0.2
-      const layerSpeed = 1 - layer * 0.2  // deeper layers move slower
-      const heightScale = 1 + layer * 0.15
-      const lt = t * layerSpeed + layerOff
+    for (let l = 0; l < this.layers; l++) {
+      const lt = t * (0.7 + l * 0.2) + l * 3.1
+      const layerAlpha = 0.5 + l * 0.3
+      const segs = 100
+      const points = []
 
-      // Base curtain edge — organic wave from sum of 5 sine octaves
-      const baseY = h * 0.15 + this._wave(lt * f * 0.3, [
-        [0.5, 0.12, 0],
-        [0.8, 0.08, 1.3],
-        [1.3, 0.06, 2.7],
-        [2.0, 0.04, 0.9],
-        [3.1, 0.03, 1.8],
-      ]) * h * 0.35
+      // Build the curtain bottom edge — organic wave from 5 sine octaves
+      for (let i = 0; i <= segs; i++) {
+        const px = (i / segs) * w
+        const ph = (i / segs) * Math.PI * 2
 
-      // For each vertical ray
-      for (let i = 0; i < rays; i++) {
-        const x = i * rayW
-        const phase = (i / rays) * Math.PI * 2
+        const wave =
+          Math.sin(lt * f * 0.25 + ph) * 0.22 +
+          Math.sin(lt * f * 0.45 + ph * 1.7 + 0.5) * 0.14 +
+          Math.sin(lt * f * 0.7 + ph * 0.6 + 1.2) * 0.09 +
+          Math.sin(lt * f * 1.1 + ph * 2.3 + 0.8) * 0.06 +
+          Math.sin(lt * f * 1.6 + ph * 1.1 + 2.5) * 0.04
 
-        // Curtain height at this ray — organic wave along the curtain
-        const curtainWave = this._wave(lt * f * 0.4 + phase, [
-          [0.5, 0.2, 0],
-          [0.9, 0.15, 1.1],
-          [1.6, 0.1, 2.3],
-          [2.8, 0.06, 0.4],
-        ])
-        const curtainH = Math.max(h * 0.05, baseY + curtainWave * h * 0.2)
-        const topY = h * 0.03 + this._wave(lt * f * 0.25 + phase * 0.6, [
-          [0.4, 0.04, 0],
-          [0.7, 0.03, 1.5],
-        ]) * h * 0.06
+        const bottomY = h * 0.25 + wave * h * 0.35
 
-        // Horizontal sway
-        const sway = this._wave(lt * f * 0.3 + phase * 0.7, [
-          [0.5, 1, 0],
-          [0.8, 0.6, 1.2],
-        ]) * rayW * 1.5
+        const sway =
+          Math.sin(lt * f * 0.18 + ph * 0.5) * w * 0.04 +
+          Math.sin(lt * f * 0.35 + ph * 1.3 + 0.7) * w * 0.02
 
-        // Ray brightness variation (vertical striations)
-        const raySeed = i * 0.3 + layer * 2
-        const rayBright = 0.6 + 0.4 * (
-          Math.sin(raySeed + lt * f * 0.1) * 0.4 +
-          Math.sin(raySeed * 2.3 + lt * f * 0.15) * 0.3 +
-          Math.sin(raySeed * 5.1 + lt * f * 0.2) * 0.3
-        )
+        points.push({ x: px + sway, y: Math.max(h * 0.05, bottomY) })
+      }
 
-        // Horizontal banding (aurora folds)
-        const foldPhase = phase * 2 + lt * f * 0.2
-        const fold = 0.7 + 0.3 * Math.sin(foldPhase)
+      // Draw main curtain shape: top edge → wavy bottom → back to top
+      ctx.beginPath()
+      ctx.moveTo(0, -5)
+      for (const p of points) ctx.lineTo(p.x, p.y)
+      ctx.lineTo(w, -5)
+      ctx.closePath()
 
-        // Alpha pulsing
-        const pulse = 0.6 + 0.4 * Math.sin(lt * f * 0.15 + phase * 0.5)
+      // Vertical gradient: purple at top → bright green in middle → fade
+      const grad = ctx.createLinearGradient(0, 0, 0, h)
+      const a = layerAlpha * 0.45
+      grad.addColorStop(0, `rgba(120,60,200,${a * 0.0})`)        // invisible at very top
+      grad.addColorStop(0.05, `rgba(100,80,220,${a * 0.15})`)    // faint purple
+      grad.addColorStop(0.15, `rgba(50,180,240,${a * 0.3})`)      // blue-purple
+      grad.addColorStop(0.35, `rgba(30,230,180,${a * 0.5})`)      // teal-green
+      grad.addColorStop(0.55, `rgba(80,255,130,${a * 0.7})`)      // bright green
+      grad.addColorStop(0.7, `rgba(140,255,100,${a * 0.6})`)      // yellow-green
+      grad.addColorStop(0.85, `rgba(100,220,80,${a * 0.25})`)     // fading at bottom edge
+      grad.addColorStop(1, `rgba(60,180,60,${a * 0.0})`)          // transparent below
+      ctx.fillStyle = grad
+      ctx.fill()
 
-        // Top color: purple-blue
-        const tp = 0.5 + 0.5 * Math.sin(lt * f * 0.1 + phase)
-        const rTop = 80 + tp * 60
-        const gTop = 40 + tp * 40
-        const bTop = 160 + tp * 80
+      // Draw vertical rays (thin striations) on top of the curtain
+      const rayCount = 90
+      for (let i = 0; i < rayCount; i++) {
+        const ph = (i / rayCount) * Math.PI * 2
+        const rx = (i / rayCount) * w +
+          Math.sin(lt * f * 0.12 + ph * 0.4) * w * 0.02
 
-        // Bottom color: green-teal
-        const rBot = 10
-        const gBot = 200 + Math.sin(lt * f * 0.08 + phase * 0.3) * 40
-        const bBot = 120 + Math.sin(lt * f * 0.12 + phase * 0.5) * 40
+        // Ray brightness: organic variation along the curtain
+        const noise =
+          0.5 + 0.5 * Math.sin(i * 0.7 + lt * f * 0.15) *
+          (0.5 + 0.5 * Math.sin(i * 1.7 + lt * f * 0.25))
 
-        const alpha = layerAlpha * rayBright * fold * pulse * 0.25
+        // Ray height: some rays are taller than others
+        const rayH = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(i * 0.5 + lt * f * 0.1))
+        const rPhase = ph + lt * f * 0.2
+        const rWave =
+          Math.sin(rPhase * 0.6) * 0.25 +
+          Math.sin(rPhase * 1.4 + 0.9) * 0.12
+        const rBottom = h * (0.35 + rWave * 0.35)
+        const rTop = h * (0.15 - rWave * 0.1 * rayH)
 
-        // Draw vertical ray as thin gradient strip
-        const grad = ctx.createLinearGradient(
-          x + sway, topY,
-          x + sway + rayW * 0.5, topY + curtainH
-        )
-        grad.addColorStop(0, `rgba(${rTop|0},${gTop|0},${bTop|0},${alpha * 1.2})`)
-        grad.addColorStop(0.15, `rgba(${rTop|0},${gTop|0},${bTop|0},${alpha})`)
-        grad.addColorStop(0.4, `rgba(${(rTop+rBot)/2|0},${(gTop+gBot)/2|0},${(bTop+bBot)/2|0},${alpha * 0.7})`)
-        grad.addColorStop(0.7, `rgba(${rBot},${gBot|0},${bBot|0},${alpha * 0.3})`)
-        grad.addColorStop(1, `rgba(${rBot},${gBot|0},${bBot|0},0)`)
+        const bright = Math.min(1, noise * 0.8)
+        const alpha = bright * layerAlpha * 0.04
+        if (alpha < 0.001) continue
 
-        ctx.fillStyle = grad
-        ctx.fillRect(x + sway, topY, rayW * 0.55, curtainH + 10)
+        ctx.strokeStyle = `rgba(80,255,120,${alpha})`
+        ctx.lineWidth = 1.5 + noise * 1.5
+        ctx.beginPath()
+        ctx.moveTo(rx, rTop)
+        ctx.lineTo(rx, rBottom)
+        ctx.stroke()
       }
     }
-
-    // 3rd layer: subtle horizontal glow bands (aurora folds)
-    ctx.globalCompositeOperation = 'screen'
-    for (let i = 0; i < 3; i++) {
-      const ly = h * 0.2 + this._wave(t * f * 0.2 + i * 5, [
-        [0.4, 0.15, 0],
-        [0.7, 0.1, 1.7],
-      ]) * h * 0.4
-      const lh = 8 + 4 * Math.sin(t * f * 0.3 + i * 2)
-      const lx = this._wave(t * f * 0.15 + i * 3, [
-        [0.3, 0.3, 0],
-        [0.6, 0.2, 2.1],
-      ]) * w * 0.2
-
-      const grad = ctx.createRadialGradient(
-        w * 0.5 + lx, ly, 0,
-        w * 0.5 + lx, ly, w * 0.3
-      )
-      grad.addColorStop(0, `rgba(100,255,150,0.04)`)
-      grad.addColorStop(0.5, `rgba(80,180,255,0.02)`)
-      grad.addColorStop(1, `rgba(0,0,0,0)`)
-      ctx.fillStyle = grad
-      ctx.fillRect(0, 0, w, h)
-    }
-    ctx.globalCompositeOperation = 'source-over'
   }
 }
 
